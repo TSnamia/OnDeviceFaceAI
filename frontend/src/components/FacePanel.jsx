@@ -1,12 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { User, Edit2, Merge, Split } from 'lucide-react'
+import { User, Users, Edit2, Merge, Split } from 'lucide-react'
 import { fetchPeople, renamePerson } from '../services/api'
 import { useState } from 'react'
 
 export default function FacePanel({ show }) {
-  const [selectedPerson, setSelectedPerson] = useState(null)
+  const [selectedPeople, setSelectedPeople] = useState([])
   const [newName, setNewName] = useState('')
   const [isRenaming, setIsRenaming] = useState(false)
+  const [showMergeDialog, setShowMergeDialog] = useState(false)
+  const [showGroupDialog, setShowGroupDialog] = useState(false)
   const queryClient = useQueryClient()
   
   const { data: people = [], isLoading } = useQuery({
@@ -19,8 +21,22 @@ export default function FacePanel({ show }) {
     onSuccess: () => {
       queryClient.invalidateQueries(['people'])
       setIsRenaming(false)
-      setSelectedPerson(null)
+      setSelectedPeople([])
       setNewName('')
+    },
+  })
+  
+  const mergeMutation = useMutation({
+    mutationFn: ({ person_id1, person_id2, keep_name }) => 
+      fetch('http://localhost:8000/api/v1/faces/people/merge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ person_id1, person_id2, keep_name })
+      }).then(r => r.json()),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['people'])
+      setShowMergeDialog(false)
+      setSelectedPeople([])
     },
   })
 
@@ -49,9 +65,15 @@ export default function FacePanel({ show }) {
             {people.map((person) => (
               <div
                 key={person.id}
-                onClick={() => setSelectedPerson(person)}
+                onClick={() => {
+                  if (selectedPeople.find(p => p.id === person.id)) {
+                    setSelectedPeople(selectedPeople.filter(p => p.id !== person.id))
+                  } else {
+                    setSelectedPeople([...selectedPeople, person])
+                  }
+                }}
                 className={`card p-3 cursor-pointer transition-all ${
-                  selectedPerson?.id === person.id
+                  selectedPeople.find(p => p.id === person.id)
                     ? 'ring-2 ring-primary-500 shadow-lg'
                     : 'hover:shadow-md'
                 }`}
@@ -78,12 +100,12 @@ export default function FacePanel({ show }) {
       <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
         <button 
           onClick={() => {
-            if (selectedPerson) {
+            if (selectedPeople.length === 1) {
               setIsRenaming(true)
-              setNewName(selectedPerson.name)
+              setNewName(selectedPeople[0].name)
             }
           }}
-          disabled={!selectedPerson}
+          disabled={selectedPeople.length !== 1}
           className="w-full btn btn-secondary text-sm flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Edit2 className="w-4 h-4" />
@@ -91,23 +113,25 @@ export default function FacePanel({ show }) {
         </button>
         <div className="grid grid-cols-2 gap-2">
           <button 
-            disabled={!selectedPerson}
+            onClick={() => setShowMergeDialog(true)}
+            disabled={selectedPeople.length < 2}
             className="btn btn-ghost text-sm flex items-center justify-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Merge className="w-4 h-4" />
             <span>Merge</span>
           </button>
           <button 
-            disabled={!selectedPerson}
+            onClick={() => setShowGroupDialog(true)}
+            disabled={selectedPeople.length === 0}
             className="btn btn-ghost text-sm flex items-center justify-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Split className="w-4 h-4" />
-            <span>Split</span>
+            <Users className="w-4 h-4" />
+            <span>Group</span>
           </button>
         </div>
       </div>
       
-      {isRenaming && selectedPerson && (
+      {isRenaming && selectedPeople.length === 1 && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setIsRenaming(false)}>
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-semibold mb-4">Rename Person</h3>
@@ -123,7 +147,7 @@ export default function FacePanel({ show }) {
               <button
                 onClick={() => {
                   if (newName.trim()) {
-                    renameMutation.mutate({ id: selectedPerson.id, name: newName.trim() })
+                    renameMutation.mutate({ id: selectedPeople[0].id, name: newName.trim() })
                   }
                 }}
                 disabled={!newName.trim() || renameMutation.isPending}
@@ -133,6 +157,98 @@ export default function FacePanel({ show }) {
               </button>
               <button
                 onClick={() => setIsRenaming(false)}
+                className="flex-1 btn btn-ghost"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {showMergeDialog && selectedPeople.length >= 2 && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowMergeDialog(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-4">Merge People</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Merging {selectedPeople.length} people into one. All faces will be combined.
+            </p>
+            <div className="space-y-2 mb-4">
+              {selectedPeople.map((person, idx) => (
+                <div key={person.id} className="flex items-center space-x-2 p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                  <input
+                    type="radio"
+                    name="keepPerson"
+                    value={person.id}
+                    defaultChecked={idx === 0}
+                    className="w-4 h-4"
+                  />
+                  <span className="text-sm">{person.name} ({person.face_count} photos)</span>
+                </div>
+              ))}
+            </div>
+            <input
+              type="text"
+              placeholder="Or enter new name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg mb-4 bg-white dark:bg-gray-700"
+            />
+            <div className="flex space-x-2">
+              <button
+                onClick={() => {
+                  const keepId = selectedPeople[0].id
+                  const mergeId = selectedPeople[1].id
+                  mergeMutation.mutate({ 
+                    person_id1: keepId, 
+                    person_id2: mergeId, 
+                    keep_name: newName.trim() || null 
+                  })
+                }}
+                disabled={mergeMutation.isPending}
+                className="flex-1 btn btn-primary"
+              >
+                {mergeMutation.isPending ? 'Merging...' : 'Merge'}
+              </button>
+              <button
+                onClick={() => setShowMergeDialog(false)}
+                className="flex-1 btn btn-ghost"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {showGroupDialog && selectedPeople.length > 0 && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setShowGroupDialog(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold mb-4">Create Group</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Creating a group with {selectedPeople.length} people
+            </p>
+            <input
+              type="text"
+              placeholder="Group name (e.g., Family, Friends)"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg mb-4 bg-white dark:bg-gray-700"
+            />
+            <div className="flex space-x-2">
+              <button
+                onClick={() => {
+                  // TODO: Implement group creation
+                  alert('Group feature will be implemented')
+                  setShowGroupDialog(false)
+                }}
+                disabled={!newName.trim()}
+                className="flex-1 btn btn-primary"
+              >
+                Create Group
+              </button>
+              <button
+                onClick={() => setShowGroupDialog(false)}
                 className="flex-1 btn btn-ghost"
               >
                 Cancel

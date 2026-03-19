@@ -101,12 +101,27 @@ class Face(Base):
     embedding = relationship('Embedding', foreign_keys=[embedding_id])
 
 
+class PersonGroup(Base):
+    __tablename__ = 'person_groups'
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False, index=True)
+    description = Column(String)
+    color = Column(String)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    members = relationship('Person', back_populates='group')
+
+
 class Person(Base):
     __tablename__ = 'people'
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
     cluster_id = Column(Integer, index=True)
+    group_id = Column(Integer, ForeignKey('person_groups.id'), nullable=True)
     
     face_count = Column(Integer, default=0)
     primary_face_id = Column(Integer, ForeignKey('faces.id'))
@@ -120,6 +135,7 @@ class Person(Base):
     
     faces = relationship('Face', back_populates='person', foreign_keys='Face.person_id')
     photos = relationship('Photo', secondary=photo_people, back_populates='people')
+    group = relationship('PersonGroup', back_populates='members')
 
 
 class Embedding(Base):

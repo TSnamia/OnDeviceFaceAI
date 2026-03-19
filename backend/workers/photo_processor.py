@@ -92,6 +92,15 @@ class PhotoProcessor:
         job.progress = 50.0
         db.commit()
         
+        # Run clustering if we have faces
+        if len(faces) > 0:
+            print(f"  Running face clustering...")
+            clusters = self.face_service.cluster_all_faces()
+            print(f"  Created {len(clusters)} clusters")
+        
+        job.progress = 70.0
+        db.commit()
+        
         embedding = self.clip_embedder.get_image_embedding(photo.file_path)
         if embedding is not None:
             print(f"  Generated CLIP embedding for photo {photo.id}")

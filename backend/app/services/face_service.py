@@ -199,29 +199,39 @@ class FaceService:
             self.db.refresh(person)
         return person
     
-    def merge_people(self, person_id1: int, person_id2: int, keep_name: str = None) -> Optional[Person]:
+    def merge_people(self, person_id1: int, person_id2: int, keep_name: str = None, additional_ids: List[int] = None) -> Optional[Person]:
         """
-        Merge two people into one
+        Merge two or more people into one
         
         Args:
-            person_id1: First person ID
-            person_id2: Second person ID
+            person_id1: First person ID (will be kept)
+            person_id2: Second person ID (will be merged into first)
             keep_name: Name to use (defaults to person1's name)
+            additional_ids: Additional person IDs to merge
             
         Returns:
             Merged Person object
         """
         person1 = self.get_person(person_id1)
-        person2 = self.get_person(person_id2)
-        
-        if not person1 or not person2:
+        if not person1:
             return None
         
+        # Collect all person IDs to merge
+        merge_ids = [person_id2]
+        if additional_ids:
+            merge_ids.extend(additional_ids)
+        
         try:
-            self.db.query(Face).filter(Face.person_id == person2.id).update(
-                {Face.person_id: person1.id}
-            )
+            # Move all faces from other people to person1
+            for pid in merge_ids:
+                person = self.get_person(pid)
+                if person:
+                    self.db.query(Face).filter(Face.person_id == pid).update(
+                        {Face.person_id: person1.id}
+                    )
+                    self.db.delete(person)
             
+            # Update face count
             person1.face_count = self.db.query(func.count(Face.id)).filter(
                 Face.person_id == person1.id
             ).scalar()
@@ -229,7 +239,6 @@ class FaceService:
             if keep_name:
                 person1.name = keep_name
             
-            self.db.delete(person2)
             self.db.commit()
             self.db.refresh(person1)
             

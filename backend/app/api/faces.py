@@ -114,7 +114,7 @@ async def merge_people(
     request: MergePeopleRequest,
     db: Session = Depends(get_db)
 ):
-    """Merge two people"""
+    """Merge two or more people into one"""
     service = FaceService(db)
     person = service.merge_people(
         request.person_id1,
