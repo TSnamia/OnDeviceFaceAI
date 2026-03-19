@@ -8,9 +8,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from app.models.database import SessionLocal, Photo, ProcessingJob
 from app.services.face_service import FaceService
 from app.core.config import settings
-# import sys
-# sys.path.append(str(settings.BASE_DIR.parent))
-# from ai_pipeline.semantic import get_clip_embedder
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from ai_pipeline.semantic import get_clip_embedder
 
 
 class PhotoProcessor:
@@ -50,8 +49,8 @@ class PhotoProcessor:
             if self.face_service is None:
                 self.face_service = FaceService(db)
             
-            # if self.clip_embedder is None:
-            #     self.clip_embedder = get_clip_embedder()
+            if self.clip_embedder is None:
+                self.clip_embedder = get_clip_embedder()
             
             for job in jobs:
                 try:
@@ -93,9 +92,9 @@ class PhotoProcessor:
         job.progress = 50.0
         db.commit()
         
-        # embedding = self.clip_embedder.get_image_embedding(photo.file_path)
-        # if embedding is not None:
-        #     print(f"  Generated CLIP embedding for photo {photo.id}")
+        embedding = self.clip_embedder.get_image_embedding(photo.file_path)
+        if embedding is not None:
+            print(f"  Generated CLIP embedding for photo {photo.id}")
         
         job.progress = 90.0
         db.commit()

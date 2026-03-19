@@ -4,10 +4,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.models.database import Photo, Face, Person, Embedding
 from app.core.config import settings
-# import sys
-# sys.path.append(str(settings.BASE_DIR.parent))
-# from ai_pipeline.face_recognition import get_face_detector
-# from ai_pipeline.clustering import get_face_clusterer
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(settings.BASE_DIR).parent))
+from ai_pipeline.face_recognition import get_face_detector
+from ai_pipeline.clustering import get_face_clusterer
 
 
 class FaceService:
@@ -18,13 +19,13 @@ class FaceService:
     
     def _ensure_detector(self):
         """Lazy load face detector"""
-        # Temporarily disabled - AI models not loaded
-        pass
+        if self.detector is None:
+            self.detector = get_face_detector()
     
     def _ensure_clusterer(self):
         """Lazy load face clusterer"""
-        # Temporarily disabled - AI models not loaded
-        pass
+        if self.clusterer is None:
+            self.clusterer = get_face_clusterer()
     
     def detect_faces_in_photo(self, photo_id: int) -> List[Face]:
         """

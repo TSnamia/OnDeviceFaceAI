@@ -82,6 +82,11 @@ export const renamePerson = async (personId, name) => {
   return response.data
 }
 
+export const fetchPersonPhotos = async (personId) => {
+  const response = await api.get(`/faces/people/${personId}/photos`)
+  return response.data
+}
+
 export const mergePeople = async (personId1, personId2, keepName = null) => {
   const response = await api.post('/faces/people/merge', {
     person_id1: personId1,
@@ -93,11 +98,6 @@ export const mergePeople = async (personId1, personId2, keepName = null) => {
 
 export const splitPerson = async (personId) => {
   const response = await api.post(`/faces/people/${personId}/split`)
-  return response.data
-}
-
-export const fetchPersonPhotos = async (personId) => {
-  const response = await api.get(`/faces/people/${personId}/photos`)
   return response.data
 }
 

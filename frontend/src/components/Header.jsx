@@ -1,9 +1,12 @@
 import { Moon, Sun, Users, Search, Upload } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import UploadModal from './UploadModal'
 
 export default function Header({ darkMode, setDarkMode, showFacePanel, setShowFacePanel }) {
   const [showUploadModal, setShowUploadModal] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const navigate = useNavigate()
 
   return (
     <>
@@ -18,14 +21,23 @@ export default function Header({ darkMode, setDarkMode, showFacePanel, setShowFa
         </div>
         
         <div className="flex-1 max-w-2xl mx-8">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search photos, people, events..."
-              className="w-full pl-10 pr-4 py-2 input"
-            />
-          </div>
+          <form onSubmit={(e) => {
+            e.preventDefault()
+            if (searchQuery.trim()) {
+              navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+            }
+          }}>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search photos, people, events..."
+                className="w-full pl-10 pr-4 py-2 input"
+              />
+            </div>
+          </form>
         </div>
         
         <div className="flex items-center space-x-2">

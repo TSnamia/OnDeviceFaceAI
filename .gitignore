@@ -53,8 +53,10 @@ models/*.onnx
 models/*.pth
 models/*.pt
 models/*.bin
+models/*.zip
 models/buffalo_l/
 models/clip/
+models/models/
 
 # Cache
 cache/

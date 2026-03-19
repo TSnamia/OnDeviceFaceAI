@@ -1,11 +1,20 @@
 import { useQuery } from '@tanstack/react-query'
-import { User, Loader2 } from 'lucide-react'
-import { fetchPeople } from '../services/api'
+import { User, Loader2, X } from 'lucide-react'
+import { fetchPeople, fetchPersonPhotos } from '../services/api'
+import { useState } from 'react'
 
 export default function People() {
+  const [selectedPerson, setSelectedPerson] = useState(null)
+  
   const { data: people, isLoading, error } = useQuery({
     queryKey: ['people'],
     queryFn: fetchPeople,
+  })
+  
+  const { data: personPhotos, isLoading: photosLoading } = useQuery({
+    queryKey: ['person-photos', selectedPerson?.id],
+    queryFn: () => fetchPersonPhotos(selectedPerson.id),
+    enabled: !!selectedPerson,
   })
 
   if (isLoading) {
@@ -51,6 +60,7 @@ export default function People() {
           {people.map((person) => (
             <div
               key={person.id}
+              onClick={() => setSelectedPerson(person)}
               className="card p-4 cursor-pointer hover:shadow-lg transition-shadow"
             >
               <div className="aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg mb-3 flex items-center justify-center overflow-hidden">
@@ -72,6 +82,46 @@ export default function People() {
           ))}
         </div>
       </div>
+      
+      {selectedPerson && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={() => setSelectedPerson(null)}>
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold">{selectedPerson.name}</h2>
+                <p className="text-sm text-gray-500">{selectedPerson.face_count} photos</p>
+              </div>
+              <button onClick={() => setSelectedPerson(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-4">
+              {photosLoading ? (
+                <div className="flex items-center justify-center h-64">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary-600" />
+                </div>
+              ) : personPhotos?.photos && personPhotos.photos.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {personPhotos.photos.map((photo) => (
+                    <div key={photo.id} className="aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
+                      <img
+                        src={`http://localhost:8000/thumbnails/${photo.id}/thumbnail.jpg`}
+                        alt={photo.file_name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 py-8">
+                  <p>No photos found</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
