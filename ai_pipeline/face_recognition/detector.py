@@ -10,7 +10,7 @@ from app.core.config import settings
 class FaceDetector:
     def __init__(self):
         self.app = None
-        self.model_name = 'buffalo_l'
+        self.model_name = settings.FACE_MODEL_NAME
         self._initialize()
     
     def _initialize(self):
@@ -22,9 +22,10 @@ class FaceDetector:
                 providers=['CUDAExecutionProvider', 'CPUExecutionProvider'] if settings.USE_GPU else ['CPUExecutionProvider']
             )
             self.app.prepare(ctx_id=0 if settings.USE_GPU else -1, det_size=(640, 640))
-            print(f"✓ FaceDetector initialized with {self.model_name}")
+            print(f"FaceDetector initialized with {self.model_name}")
         except Exception as e:
-            print(f"✗ Failed to initialize FaceDetector: {e}")
+            # Avoid re-triggering encoding errors when exception text contains Unicode.
+            print("Failed to initialize FaceDetector")
             raise
     
     def detect_faces(self, image_path: str) -> List[Dict]:

@@ -7,8 +7,6 @@ from app.core.config import settings
 import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(settings.BASE_DIR).parent))
-from ai_pipeline.face_recognition import get_face_detector
-from ai_pipeline.clustering import get_face_clusterer
 
 
 class FaceService:
@@ -20,11 +18,13 @@ class FaceService:
     def _ensure_detector(self):
         """Lazy load face detector"""
         if self.detector is None:
+            from ai_pipeline.face_recognition import get_face_detector
             self.detector = get_face_detector()
     
     def _ensure_clusterer(self):
         """Lazy load face clusterer"""
         if self.clusterer is None:
+            from ai_pipeline.clustering import get_face_clusterer
             self.clusterer = get_face_clusterer()
     
     def detect_faces_in_photo(self, photo_id: int) -> List[Face]:
@@ -108,7 +108,18 @@ class FaceService:
                     face_ids.append(face.id)
         
         if not embeddings:
-            return {}
+            # Fallback: if embeddings are unavailable, still create person entries
+            # for unassigned faces so the People panel is populated.
+            next_cluster = self._get_next_cluster_id()
+            cluster_map = {}
+            for face in faces:
+                if face.person_id is None:
+                    cluster_map[face.id] = next_cluster
+                    next_cluster += 1
+
+            if cluster_map:
+                self._update_face_clusters(cluster_map)
+            return cluster_map
         
         embeddings_array = np.array(embeddings)
         

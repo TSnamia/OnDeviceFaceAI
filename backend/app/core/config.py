@@ -34,13 +34,14 @@ class Settings(BaseSettings):
     USE_GPU: bool = True
     
     # Face Recognition
+    FACE_MODEL_NAME: str = "buffalo_l"
     FACE_DETECTION_THRESHOLD: float = 0.5
     FACE_RECOGNITION_THRESHOLD: float = 0.6
     MIN_FACE_SIZE: int = 20
     FACE_EMBEDDING_DIM: int = 512
     
     # Clustering
-    CLUSTERING_METHOD: str = "hdbscan"  # hdbscan or dbscan
+    CLUSTERING_METHOD: str = "dbscan"  # hdbscan or dbscan
     DBSCAN_EPS: float = 0.5
     DBSCAN_MIN_SAMPLES: int = 2
     HDBSCAN_MIN_CLUSTER_SIZE: int = 3

@@ -30,8 +30,8 @@ if settings.THUMBNAILS_DIR.exists():
 async def startup_event():
     """Initialize database on startup"""
     init_db()
-    print(f"✓ {settings.APP_NAME} v{settings.APP_VERSION} started")
-    print(f"✓ Database initialized at {settings.DATABASE_URL}")
+    print(f"{settings.APP_NAME} v{settings.APP_VERSION} started")
+    print(f"Database initialized at {settings.DATABASE_URL}")
 
 
 @app.get("/")

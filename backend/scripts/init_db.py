@@ -16,14 +16,14 @@ def main():
     
     init_db()
     
-    print("✓ Database initialized successfully")
-    print(f"✓ Database file: {settings.DATABASE_DIR}/photos.db")
+    print("Database initialized successfully")
+    print(f"Database file: {settings.DATABASE_DIR}/photos.db")
     
     from sqlalchemy import inspect
     inspector = inspect(engine)
     tables = inspector.get_table_names()
     
-    print(f"\n✓ Created {len(tables)} tables:")
+    print(f"\nCreated {len(tables)} tables:")
     for table in tables:
         print(f"  - {table}")
 

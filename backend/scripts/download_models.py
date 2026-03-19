@@ -10,22 +10,23 @@ import argparse
 
 def download_insightface_models():
     """Download InsightFace models"""
-    print("\n📥 Downloading InsightFace models...")
+    print("\nDownloading InsightFace models...")
     
     try:
         import insightface
         from insightface.app import FaceAnalysis
         
         app = FaceAnalysis(
-            name='buffalo_l',
+            name=settings.FACE_MODEL_NAME,
             root=str(settings.MODELS_DIR),
             providers=['CPUExecutionProvider']
         )
+        app.prepare(ctx_id=-1, det_size=(640, 640))
         
-        print("✓ InsightFace buffalo_l model downloaded")
+        print(f"InsightFace {settings.FACE_MODEL_NAME} model downloaded")
         
     except Exception as e:
-        print(f"✗ Failed to download InsightFace models: {e}")
+        print(f"Failed to download InsightFace models: {e}")
         return False
     
     return True
@@ -33,7 +34,7 @@ def download_insightface_models():
 
 def download_clip_models():
     """Download CLIP models"""
-    print("\n📥 Downloading CLIP models...")
+    print("\nDownloading CLIP models...")
     
     try:
         from transformers import CLIPModel, CLIPProcessor
@@ -48,10 +49,10 @@ def download_clip_models():
             cache_dir=str(settings.MODELS_DIR / 'clip')
         )
         
-        print(f"✓ CLIP model {settings.CLIP_MODEL_NAME} downloaded")
+        print(f"CLIP model {settings.CLIP_MODEL_NAME} downloaded")
         
     except Exception as e:
-        print(f"✗ Failed to download CLIP models: {e}")
+        print(f"Failed to download CLIP models: {e}")
         return False
     
     return True
@@ -65,12 +66,12 @@ def main():
     
     args = parser.parse_args()
     
-    print("🤖 OnDeviceFaceAI Model Downloader")
+    print("OnDeviceFaceAI Model Downloader")
     print("=" * 50)
     
     settings.MODELS_DIR.mkdir(parents=True, exist_ok=True)
     
-    print(f"\n📁 Models directory: {settings.MODELS_DIR}")
+    print(f"\nModels directory: {settings.MODELS_DIR}")
     
     success = True
     
@@ -85,16 +86,16 @@ def main():
     print("\n" + "=" * 50)
     
     if success:
-        print("✓ All models downloaded successfully!")
+        print("All models downloaded successfully")
         
         total_size = sum(
             f.stat().st_size 
             for f in settings.MODELS_DIR.rglob('*') 
             if f.is_file()
         )
-        print(f"📦 Total size: {total_size / (1024**3):.2f} GB")
+        print(f"Total size: {total_size / (1024**3):.2f} GB")
     else:
-        print("✗ Some models failed to download")
+        print("Some models failed to download")
         sys.exit(1)
 
 

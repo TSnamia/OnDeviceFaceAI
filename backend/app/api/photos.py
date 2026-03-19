@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from app.models.database import get_db, Photo
 from app.services.photo_service import PhotoService
+from app.services.face_service import FaceService
 import shutil
 from pathlib import Path
 from app.core.config import settings
@@ -57,6 +58,10 @@ async def upload_photo(
         
         service = PhotoService(db)
         photo = service.import_photo(str(file_path), copy_to_library=True)
+        if photo:
+            face_service = FaceService(db)
+            face_service.detect_faces_in_photo(photo.id)
+            face_service.cluster_all_faces()
         
         file_path.unlink()
         
@@ -77,6 +82,8 @@ async def upload_multiple_photos(
     """Upload multiple photos"""
     photos = []
     
+    face_service = FaceService(db)
+
     for file in files:
         try:
             upload_dir = settings.DATA_DIR / "uploads"
@@ -93,10 +100,14 @@ async def upload_multiple_photos(
             file_path.unlink()
             
             if photo:
+                face_service.detect_faces_in_photo(photo.id)
                 photos.append(photo)
                 
         except Exception as e:
             print(f"Error uploading {file.filename}: {e}")
+
+    if photos:
+        face_service.cluster_all_faces()
     
     return photos
 
@@ -110,6 +121,11 @@ async def import_folder(
     try:
         service = PhotoService(db)
         photos = service.import_folder(request.folder_path, request.recursive)
+        if photos:
+            face_service = FaceService(db)
+            for photo in photos:
+                face_service.detect_faces_in_photo(photo.id)
+            face_service.cluster_all_faces()
         return photos
         
     except Exception as e:

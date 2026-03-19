@@ -270,15 +270,17 @@ class PhotoService:
                     elif tag == 'Model':
                         metadata['camera_model'] = str(value)
                     elif tag == 'GPSInfo':
-                        gps_data = {}
-                        for gps_tag_id in value:
-                            gps_tag = GPSTAGS.get(gps_tag_id, gps_tag_id)
-                            gps_data[gps_tag] = value[gps_tag_id]
-                        
-                        lat, lon = self._parse_gps(gps_data)
-                        if lat and lon:
-                            metadata['latitude'] = lat
-                            metadata['longitude'] = lon
+                        # Some images contain malformed GPSInfo (e.g. an int). Skip safely.
+                        if isinstance(value, dict):
+                            gps_data = {}
+                            for gps_tag_id, gps_value in value.items():
+                                gps_tag = GPSTAGS.get(gps_tag_id, gps_tag_id)
+                                gps_data[gps_tag] = gps_value
+                            
+                            lat, lon = self._parse_gps(gps_data)
+                            if lat is not None and lon is not None:
+                                metadata['latitude'] = lat
+                                metadata['longitude'] = lon
             
         except Exception as e:
             print(f"Error extracting metadata from {file_path}: {e}")
@@ -287,6 +289,19 @@ class PhotoService:
     
     def _parse_gps(self, gps_data: Dict) -> tuple:
         """Parse GPS coordinates from EXIF"""
+        def _to_float(v):
+            # PIL may return IFDRational, tuple/list rationals, or plain ints/floats.
+            if isinstance(v, (int, float)):
+                return float(v)
+            if hasattr(v, "numerator") and hasattr(v, "denominator"):
+                den = float(v.denominator) if v.denominator else 1.0
+                return float(v.numerator) / den
+            if isinstance(v, (tuple, list)) and len(v) == 2:
+                num, den = v
+                den = float(den) if den else 1.0
+                return float(num) / den
+            return float(v)
+
         try:
             lat = gps_data.get('GPSLatitude')
             lat_ref = gps_data.get('GPSLatitudeRef')
@@ -294,8 +309,13 @@ class PhotoService:
             lon_ref = gps_data.get('GPSLongitudeRef')
             
             if lat and lon:
-                lat_decimal = lat[0] + lat[1] / 60 + lat[2] / 3600
-                lon_decimal = lon[0] + lon[1] / 60 + lon[2] / 3600
+                if not isinstance(lat, (tuple, list)) or not isinstance(lon, (tuple, list)):
+                    return None, None
+                if len(lat) < 3 or len(lon) < 3:
+                    return None, None
+
+                lat_decimal = _to_float(lat[0]) + _to_float(lat[1]) / 60 + _to_float(lat[2]) / 3600
+                lon_decimal = _to_float(lon[0]) + _to_float(lon[1]) / 60 + _to_float(lon[2]) / 3600
                 
                 if lat_ref == 'S':
                     lat_decimal = -lat_decimal

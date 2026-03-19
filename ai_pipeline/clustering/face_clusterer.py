@@ -1,7 +1,6 @@
 import numpy as np
 from typing import List, Dict, Optional, Tuple
 from sklearn.cluster import DBSCAN
-import hdbscan
 from collections import defaultdict
 from app.core.config import settings
 
@@ -51,6 +50,8 @@ class FaceClusterer:
     def _cluster_hdbscan(self, embeddings: np.ndarray, min_cluster_size: Optional[int] = None) -> np.ndarray:
         """Cluster using HDBSCAN"""
         try:
+            import hdbscan
+
             if min_cluster_size is None:
                 min_cluster_size = settings.HDBSCAN_MIN_CLUSTER_SIZE
             

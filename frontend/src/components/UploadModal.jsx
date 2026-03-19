@@ -7,13 +7,22 @@ import { uploadPhotos, importFolder } from '../services/api'
 export default function UploadModal({ onClose }) {
   const [uploadMode, setUploadMode] = useState('files')
   const [folderPath, setFolderPath] = useState('')
+  const [uploadProgress, setUploadProgress] = useState(0)
   const queryClient = useQueryClient()
 
   const uploadMutation = useMutation({
-    mutationFn: uploadPhotos,
+    mutationFn: ({ files }) =>
+      uploadPhotos({
+        files,
+        onProgress: (percent) => setUploadProgress(percent),
+      }),
     onSuccess: () => {
       queryClient.invalidateQueries(['photos'])
+      setUploadProgress(0)
       onClose()
+    },
+    onError: () => {
+      setUploadProgress(0)
     },
   })
 
@@ -31,7 +40,8 @@ export default function UploadModal({ onClose }) {
     },
     onDrop: (files) => {
       if (files.length > 0) {
-        uploadMutation.mutate(files)
+        setUploadProgress(0)
+        uploadMutation.mutate({ files })
       }
     }
   })
@@ -100,8 +110,17 @@ export default function UploadModal({ onClose }) {
               )}
               
               {uploadMutation.isPending && (
-                <div className="mt-4">
-                  <div className="text-sm text-primary-600">Uploading...</div>
+                <div className="mt-4 w-full max-w-md mx-auto">
+                  <div className="flex items-center justify-between text-sm text-primary-600 mb-1">
+                    <span>Uploading...</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary-600 transition-all duration-200"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
                 </div>
               )}
             </div>

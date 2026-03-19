@@ -21,15 +21,20 @@ export const fetchPhoto = async (photoId) => {
   return response.data
 }
 
-export const uploadPhotos = async (files) => {
+export const uploadPhotos = async ({ files, onProgress } = {}) => {
   const formData = new FormData()
-  files.forEach((file) => {
+  ;(files || []).forEach((file) => {
     formData.append('files', file)
   })
   
   const response = await api.post('/photos/upload-multiple', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
+    },
+    onUploadProgress: (event) => {
+      if (!onProgress || !event.total) return
+      const percent = Math.round((event.loaded * 100) / event.total)
+      onProgress(percent)
     },
   })
   return response.data
