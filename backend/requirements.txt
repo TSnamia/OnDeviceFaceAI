@@ -11,15 +11,14 @@ sqlite-utils==3.36
 
 # AI/ML - Face Recognition
 insightface==0.7.3
-onnxruntime==1.16.3
-onnxruntime-gpu==1.16.3
+onnxruntime>=1.24.1
 
 # AI/ML - CLIP and Vision
-torch==2.1.2
-torchvision==0.16.2
-transformers==4.36.2
-pillow==10.2.0
-opencv-python==4.9.0.80
+torch>=2.9.0
+torchvision>=0.20.0
+transformers>=4.36.2
+pillow>=10.2.0
+opencv-python>=4.9.0.80
 
 # Vector Search
 faiss-cpu==1.7.4

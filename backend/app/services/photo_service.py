@@ -63,6 +63,11 @@ class PhotoService:
             metadata = self._extract_metadata(final_path)
             phash = self._compute_phash(final_path)
             
+            # Convert datetime to string for JSON serialization
+            metadata_json = metadata.copy()
+            if 'taken_at' in metadata_json and metadata_json['taken_at']:
+                metadata_json['taken_at'] = metadata_json['taken_at'].isoformat()
+            
             photo = Photo(
                 file_path=str(final_path),
                 file_name=final_path.name,
@@ -78,7 +83,7 @@ class PhotoService:
                 longitude=metadata.get('longitude'),
                 camera_make=metadata.get('camera_make'),
                 camera_model=metadata.get('camera_model'),
-                metadata_json=metadata
+                metadata_json=metadata_json
             )
             
             self.db.add(photo)

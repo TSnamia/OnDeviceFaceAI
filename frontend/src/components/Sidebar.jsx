@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { 
-  Images, 
+  Image, 
   Users, 
   FolderHeart, 
   Calendar, 
@@ -10,7 +10,7 @@ import {
 } from 'lucide-react'
 
 const navItems = [
-  { path: '/', icon: Images, label: 'All Photos' },
+  { path: '/', icon: Image, label: 'All Photos' },
   { path: '/people', icon: Users, label: 'People' },
   { path: '/albums', icon: FolderHeart, label: 'Albums' },
 ]

@@ -97,7 +97,7 @@ class Face(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     photo = relationship('Photo', back_populates='faces')
-    person = relationship('Person', back_populates='faces')
+    person = relationship('Person', back_populates='faces', foreign_keys=[person_id])
     embedding = relationship('Embedding', foreign_keys=[embedding_id])
 
 
@@ -118,7 +118,7 @@ class Person(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    faces = relationship('Face', back_populates='person', foreign_keys=[Face.person_id])
+    faces = relationship('Face', back_populates='person', foreign_keys='Face.person_id')
     photos = relationship('Photo', secondary=photo_people, back_populates='people')
 
 
