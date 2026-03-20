@@ -7,6 +7,7 @@ import People from './pages/People'
 import PersonProfile from './pages/PersonProfile'
 import Albums from './pages/Albums'
 import Map from './pages/Map'
+import Favorites from './pages/Favorites'
 import Search from './pages/Search'
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Route path="/people/:personId" element={<PersonProfile />} />
           <Route path="/albums" element={<Albums />} />
           <Route path="/map" element={<Map />} />
+          <Route path="/favorites" element={<Favorites />} />
           <Route path="/search" element={<Search />} />
         </Routes>
       </Layout>

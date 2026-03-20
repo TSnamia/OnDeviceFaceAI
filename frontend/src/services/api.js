@@ -60,13 +60,6 @@ export const importFolder = async (folderPath, recursive = true) => {
   return response.data
 }
 
-export const deletePhoto = async (photoId, deleteFile = false) => {
-  const response = await api.delete(`/photos/${photoId}`, {
-    params: { delete_file: deleteFile }
-  })
-  return response.data
-}
-
 export const findDuplicates = async (threshold = 5) => {
   const response = await api.get('/photos/duplicates/find', {
     params: { threshold }

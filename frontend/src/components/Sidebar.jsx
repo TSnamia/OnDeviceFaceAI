@@ -74,13 +74,22 @@ export default function Sidebar() {
             Tags
           </h3>
           <div className="space-y-1">
-            <button className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            <NavLink
+              to="/favorites"
+              className={({ isActive }) =>
+                `w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
+                  isActive
+                    ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`
+              }
+            >
               <div className="flex items-center space-x-3">
-                <Tag className="w-4 h-4 text-gray-500" />
+                <Tag className="w-4 h-4" />
                 <span className="text-sm">Favorites</span>
               </div>
-              <span className="text-xs text-gray-400">0</span>
-            </button>
+              <span className="text-xs text-gray-400">★</span>
+            </NavLink>
           </div>
         </div>
       </nav>

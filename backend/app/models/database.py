@@ -55,6 +55,13 @@ class Photo(Base):
     
     processed = Column(Boolean, default=False, index=True)
     processing_error = Column(Text)
+    is_favorite = Column(Boolean, default=False, index=True)
+    
+    # AI-generated content
+    ocr_text = Column(Text)
+    object_tags = Column(String)
+    scene_tags = Column(String)
+    quality_score = Column(Float)
     
     thumbnail_path = Column(String)
     preview_path = Column(String)

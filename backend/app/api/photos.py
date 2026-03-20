@@ -203,6 +203,45 @@ async def bulk_delete_photos(
     }
 
 
+@router.post("/{photo_id}/favorite")
+async def toggle_favorite(
+    photo_id: int,
+    db: Session = Depends(get_db)
+):
+    """Toggle favorite status of a photo"""
+    photo = db.query(Photo).filter(Photo.id == photo_id).first()
+    
+    if not photo:
+        raise HTTPException(status_code=404, detail="Photo not found")
+    
+    photo.is_favorite = not photo.is_favorite
+    db.commit()
+    db.refresh(photo)
+    
+    return {
+        "message": "Favorite status updated",
+        "is_favorite": photo.is_favorite
+    }
+
+
+@router.get("/favorites")
+async def get_favorites(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """Get all favorite photos"""
+    photos = db.query(Photo).filter(Photo.is_favorite == True).offset(skip).limit(limit).all()
+    total = db.query(Photo).filter(Photo.is_favorite == True).count()
+    
+    return {
+        "photos": photos,
+        "total": total,
+        "skip": skip,
+        "limit": limit
+    }
+
+
 @router.get("/duplicates/find")
 async def find_duplicates(
     threshold: int = 5,

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Image as ImageIcon, Check } from 'lucide-react'
+import { Image as ImageIcon, Check, Star } from 'lucide-react'
 
 export default function PhotoGrid({ photos, selectionMode = false, selectedPhotos = [], onPhotoSelect }) {
   const [selectedPhoto, setSelectedPhoto] = useState(null)
@@ -24,7 +24,7 @@ export default function PhotoGrid({ photos, selectionMode = false, selectedPhoto
             <div
               key={photo.id}
               onClick={() => handlePhotoClick(photo)}
-              className={`aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden cursor-pointer transition-all relative ${
+              className={`group aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden cursor-pointer transition-all relative ${
                 isSelected(photo) 
                   ? 'ring-4 ring-primary-500' 
                   : 'hover:ring-2 hover:ring-primary-500'
@@ -47,7 +47,7 @@ export default function PhotoGrid({ photos, selectionMode = false, selectedPhoto
                 </div>
               )}
               
-              {selectionMode && (
+              {selectionMode ? (
                 <div className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center ${
                   isSelected(photo) 
                     ? 'bg-primary-500 text-white' 
@@ -55,6 +55,17 @@ export default function PhotoGrid({ photos, selectionMode = false, selectedPhoto
                 }`}>
                   {isSelected(photo) && <Check className="w-4 h-4" />}
                 </div>
+              ) : (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    // TODO: Toggle favorite
+                    console.log('Toggle favorite:', photo.id)
+                  }}
+                  className="absolute top-2 right-2 p-1 bg-black bg-opacity-50 hover:bg-opacity-75 rounded-full transition-opacity opacity-0 group-hover:opacity-100"
+                >
+                  <Star className={`w-4 h-4 ${photo.is_favorite ? 'fill-yellow-400 text-yellow-400' : 'text-white'}`} />
+                </button>
               )}
             </div>
           ))}
@@ -71,7 +82,7 @@ export default function PhotoGrid({ photos, selectionMode = false, selectedPhoto
   )
 }
 
-function PhotoModal({ photo, onClose }) {
+function PhotoModal({ photo, onClose, onEdit }) {
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50"
@@ -87,6 +98,18 @@ function PhotoModal({ photo, onClose }) {
             e.target.src = `http://localhost:8000/thumbnails/${photo.id}/thumbnail.jpg`
           }}
         />
+      </div>
+      
+      <div className="absolute top-4 right-4 flex space-x-2">
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            onEdit && onEdit(photo)
+          }}
+          className="px-4 py-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        >
+          Edit
+        </button>
       </div>
       
       <div className="absolute top-4 right-4 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg max-w-sm">
