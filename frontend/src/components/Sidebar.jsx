@@ -6,13 +6,17 @@ import {
   Calendar, 
   Tag,
   Sparkles,
-  Download
+  Download,
+  LayoutDashboard,
+  MapPin
 } from 'lucide-react'
 
 const navItems = [
-  { path: '/', icon: Image, label: 'All Photos' },
+  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
+  { path: '/gallery', icon: Image, label: 'All Photos' },
   { path: '/people', icon: Users, label: 'People' },
   { path: '/albums', icon: FolderHeart, label: 'Albums' },
+  { path: '/map', icon: MapPin, label: 'Map' },
 ]
 
 const smartAlbums = [

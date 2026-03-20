@@ -21,6 +21,18 @@ export const fetchPhoto = async (photoId) => {
   return response.data
 }
 
+export const deletePhoto = async (photoId, deleteFile = false) => {
+  const response = await api.delete(`/photos/${photoId}`, {
+    params: { delete_file: deleteFile }
+  })
+  return response.data
+}
+
+export const bulkDeletePhotos = async (photoIds) => {
+  const response = await api.post('/photos/bulk-delete', photoIds)
+  return response.data
+}
+
 export const uploadPhotos = async ({ files, onProgress } = {}) => {
   const formData = new FormData()
   ;(files || []).forEach((file) => {

@@ -1,8 +1,20 @@
 import { useState } from 'react'
-import { Image as ImageIcon } from 'lucide-react'
+import { Image as ImageIcon, Check } from 'lucide-react'
 
-export default function PhotoGrid({ photos }) {
+export default function PhotoGrid({ photos, selectionMode = false, selectedPhotos = [], onPhotoSelect }) {
   const [selectedPhoto, setSelectedPhoto] = useState(null)
+
+  const handlePhotoClick = (photo) => {
+    if (selectionMode && onPhotoSelect) {
+      onPhotoSelect(photo)
+    } else {
+      setSelectedPhoto(photo)
+    }
+  }
+
+  const isSelected = (photo) => {
+    return selectedPhotos.some(p => p.id === photo.id)
+  }
 
   return (
     <>
@@ -11,8 +23,12 @@ export default function PhotoGrid({ photos }) {
           {photos.map((photo) => (
             <div
               key={photo.id}
-              onClick={() => setSelectedPhoto(photo)}
-              className="aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary-500 transition-all"
+              onClick={() => handlePhotoClick(photo)}
+              className={`aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden cursor-pointer transition-all relative ${
+                isSelected(photo) 
+                  ? 'ring-4 ring-primary-500' 
+                  : 'hover:ring-2 hover:ring-primary-500'
+              }`}
             >
               {photo.thumbnail_path ? (
                 <img
@@ -28,6 +44,16 @@ export default function PhotoGrid({ photos }) {
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageIcon className="w-8 h-8 text-gray-400" />
+                </div>
+              )}
+              
+              {selectionMode && (
+                <div className={`absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center ${
+                  isSelected(photo) 
+                    ? 'bg-primary-500 text-white' 
+                    : 'bg-white bg-opacity-80 border-2 border-gray-300'
+                }`}>
+                  {isSelected(photo) && <Check className="w-4 h-4" />}
                 </div>
               )}
             </div>
@@ -53,10 +79,13 @@ function PhotoModal({ photo, onClose }) {
     >
       <div className="max-w-7xl max-h-full p-4">
         <img
-          src={photo.preview_path || photo.file_path}
+          src={`http://localhost:8000/thumbnails/${photo.id}/preview.jpg`}
           alt={photo.file_name}
           className="max-w-full max-h-full object-contain"
           onClick={(e) => e.stopPropagation()}
+          onError={(e) => {
+            e.target.src = `http://localhost:8000/thumbnails/${photo.id}/thumbnail.jpg`
+          }}
         />
       </div>
       

@@ -171,17 +171,36 @@ async def get_photo(
 @router.delete("/{photo_id}")
 async def delete_photo(
     photo_id: int,
-    delete_file: bool = False,
     db: Session = Depends(get_db)
 ):
     """Delete a photo"""
     service = PhotoService(db)
-    success = service.delete_photo(photo_id, delete_file)
+    success = service.delete_photo(photo_id)
     
     if not success:
         raise HTTPException(status_code=404, detail="Photo not found")
     
     return {"message": "Photo deleted successfully"}
+
+
+@router.post("/bulk-delete")
+async def bulk_delete_photos(
+    photo_ids: List[int],
+    db: Session = Depends(get_db)
+):
+    """Delete multiple photos"""
+    service = PhotoService(db)
+    deleted_count = 0
+    
+    for photo_id in photo_ids:
+        if service.delete_photo(photo_id):
+            deleted_count += 1
+    
+    return {
+        "message": f"Deleted {deleted_count} photos",
+        "deleted_count": deleted_count,
+        "total_requested": len(photo_ids)
+    }
 
 
 @router.get("/duplicates/find")

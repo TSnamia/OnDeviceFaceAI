@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { User, Loader2, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { fetchPeople, fetchPersonPhotos } from '../services/api'
 import { useState } from 'react'
 
 export default function People() {
   const [selectedPerson, setSelectedPerson] = useState(null)
+  const navigate = useNavigate()
   
   const { data: people, isLoading, error } = useQuery({
     queryKey: ['people'],
@@ -60,7 +62,7 @@ export default function People() {
           {people.map((person) => (
             <div
               key={person.id}
-              onClick={() => setSelectedPerson(person)}
+              onClick={() => navigate(`/people/${person.id}`)}
               className="card p-4 cursor-pointer hover:shadow-lg transition-shadow"
             >
               <div className="aspect-square bg-gray-200 dark:bg-gray-700 rounded-lg mb-3 flex items-center justify-center overflow-hidden">

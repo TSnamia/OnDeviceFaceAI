@@ -36,16 +36,16 @@ class Settings(BaseSettings):
     # Face Recognition
     FACE_MODEL_NAME: str = "buffalo_l"
     FACE_DETECTION_THRESHOLD: float = 0.5
-    FACE_RECOGNITION_THRESHOLD: float = 0.6
+    FACE_RECOGNITION_THRESHOLD: float = 0.4  # Lower = more lenient matching (0.4-0.5 recommended)
     MIN_FACE_SIZE: int = 20
     FACE_EMBEDDING_DIM: int = 512
     
     # Clustering
     CLUSTERING_METHOD: str = "dbscan"  # hdbscan or dbscan
-    DBSCAN_EPS: float = 0.5
-    DBSCAN_MIN_SAMPLES: int = 2
-    HDBSCAN_MIN_CLUSTER_SIZE: int = 3
-    HDBSCAN_MIN_SAMPLES: int = 2
+    DBSCAN_EPS: float = 0.35  # Lower = stricter grouping (0.3-0.4 recommended for same person)
+    DBSCAN_MIN_SAMPLES: int = 1  # Minimum faces to form a cluster
+    HDBSCAN_MIN_CLUSTER_SIZE: int = 2
+    HDBSCAN_MIN_SAMPLES: int = 1
     
     # CLIP
     CLIP_MODEL_NAME: str = "openai/clip-vit-base-patch32"

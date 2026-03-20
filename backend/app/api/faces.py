@@ -61,12 +61,31 @@ async def detect_faces(
 async def cluster_all_faces(db: Session = Depends(get_db)):
     """Cluster all faces in the database"""
     service = FaceService(db)
-    cluster_map = service.cluster_all_faces()
+    result = service.cluster_all_faces()
     
     return {
         "message": "Clustering completed",
-        "faces_clustered": len(cluster_map),
-        "clusters_created": len(set(cluster_map.values()))
+        "faces_clustered": len(result),
+        "clusters_created": len(set(result.values()))
+    }
+
+
+@router.post("/recluster-all")
+async def recluster_all_faces(db: Session = Depends(get_db)):
+    """Re-cluster all faces (deletes existing people and re-groups)"""
+    service = FaceService(db)
+    
+    # Delete all existing people
+    db.query(Person).delete()
+    db.commit()
+    
+    # Re-cluster all faces
+    result = service.cluster_all_faces()
+    
+    return {
+        "message": "Re-clustering completed",
+        "faces_clustered": len(result),
+        "clusters_created": len(set(result.values()))
     }
 
 
