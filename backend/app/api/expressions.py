@@ -49,8 +49,9 @@ async def filter_by_expression(
         skip: Number of records to skip
         limit: Maximum number of results
     """
-    # Get all processed photos
-    photos = db.query(Photo).filter(Photo.processed == True).offset(skip).limit(limit * 2).all()
+    # Processed==True zorunlu değil: quality/processing adımları çalışmamış olsa bile
+    # detector on-demand çalışıp sonuç üretmeye devam etsin.
+    photos = db.query(Photo).offset(skip).limit(limit * 2).all()
     
     detector = get_expression_detector()
     matching_photos = []
@@ -70,8 +71,11 @@ async def filter_by_expression(
         if len(matching_photos) >= limit:
             break
     
+    from app.api.photos import PhotoResponse
+
+    # Serialize ORM objects explicitly so frontend gets required fields.
     return {
-        "photos": [p['photo'] for p in matching_photos],
+        "photos": [PhotoResponse.from_orm(p["photo"]) for p in matching_photos],
         "total": len(matching_photos),
         "expression": expression,
         "confidence_threshold": confidence
@@ -93,7 +97,7 @@ async def get_smiling_photos(
         skip: Number of records to skip
         limit: Maximum number of results
     """
-    photos = db.query(Photo).filter(Photo.processed == True).offset(skip).limit(limit * 2).all()
+    photos = db.query(Photo).offset(skip).limit(limit * 2).all()
     
     detector = get_expression_detector()
     smiling_photos = []
@@ -105,8 +109,10 @@ async def get_smiling_photos(
         if len(smiling_photos) >= limit:
             break
     
+    from app.api.photos import PhotoResponse
+
     return {
-        "photos": smiling_photos,
+        "photos": [PhotoResponse.from_orm(p) for p in smiling_photos],
         "total": len(smiling_photos),
         "threshold": threshold
     }

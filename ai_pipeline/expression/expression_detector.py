@@ -7,7 +7,9 @@ import sys
 # Add InsightFace path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 try:
-    from ai_pipeline.face_recognition.face_detector import get_face_detector
+    # Repo'da face detector dosyası `detector.py` olduğu için yanlış import
+    # yüzünden INSIGHTFACE_AVAILABLE sürekli False olabiliyordu.
+    from ai_pipeline.face_recognition.detector import get_face_detector
     INSIGHTFACE_AVAILABLE = True
 except ImportError:
     INSIGHTFACE_AVAILABLE = False
@@ -42,23 +44,52 @@ class ExpressionDetector:
             return []
         
         try:
-            img = cv2.imread(image_path)
-            if img is None:
-                return []
-            
-            # Detect faces
-            faces = self.detector.get(img)
-            
+            # FaceDetector şu an bize (bbox + landmarks + embedding vb.) dict listesi döndürüyor.
+            # ExpressionDetector ise bu landmarks üzerinden heuristik expression çıkaracak.
+            faces = self.detector.detect_faces(image_path)
             expressions = []
+
             for face in faces:
-                # Analyze expression based on face landmarks
-                expression_data = self._analyze_face_expression(face)
-                
-                if expression_data:
-                    expressions.append(expression_data)
-            
+                landmarks = face.get("landmarks")
+                if not landmarks:
+                    continue
+
+                landmarks_np = np.asarray(landmarks, dtype=np.float32)
+
+                # Calculate expression features
+                is_smiling = self._detect_smile(landmarks_np)
+                eye_openness = self._calculate_eye_openness(landmarks_np)
+                mouth_openness = self._calculate_mouth_openness(landmarks_np)
+
+                # Determine expression based on features
+                expression = "neutral"
+                confidence = 0.5
+
+                if is_smiling >= 0.5:
+                    expression = "happy"
+                    confidence = is_smiling
+                elif mouth_openness > 0.7 and eye_openness > 0.7:
+                    expression = "surprise"
+                    confidence = float(min(mouth_openness, eye_openness))
+                elif eye_openness < 0.3:
+                    expression = "sad"
+                    confidence = float(1.0 - eye_openness)
+
+                expressions.append(
+                    {
+                        "expression": expression,
+                        "confidence": float(confidence),
+                        "features": {
+                            "smile": float(is_smiling),
+                            "eye_openness": float(eye_openness),
+                            "mouth_openness": float(mouth_openness),
+                        },
+                        "bbox": face.get("bbox") or [],
+                    }
+                )
+
             return expressions
-            
+
         except Exception as e:
             print(f"Error detecting expressions: {e}")
             return []
@@ -74,10 +105,14 @@ class ExpressionDetector:
         """
         try:
             # Get landmarks (106 points from InsightFace)
-            if not hasattr(face, 'landmark_2d_106'):
+            landmarks = None
+            if hasattr(face, 'landmark_2d_106'):
+                landmarks = face.landmark_2d_106
+            elif hasattr(face, 'kps'):
+                # InsightFace bazı sürümlerde 2D landmarkları `kps` altında verir.
+                landmarks = face.kps
+            else:
                 return None
-            
-            landmarks = face.landmark_2d_106
             
             # Calculate expression features
             is_smiling = self._detect_smile(landmarks)
@@ -88,7 +123,7 @@ class ExpressionDetector:
             expression = 'neutral'
             confidence = 0.5
             
-            if is_smiling > 0.6:
+            if is_smiling >= 0.5:
                 expression = 'happy'
                 confidence = is_smiling
             elif mouth_openness > 0.7 and eye_openness > 0.7:

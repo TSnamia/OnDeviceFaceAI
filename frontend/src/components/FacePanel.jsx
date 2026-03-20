@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { User, Users, Edit2, Merge, Split } from 'lucide-react'
-import { fetchPeople, renamePerson } from '../services/api'
+import { fetchPeople, fetchPersonPhotos, renamePerson } from '../services/api'
 import { useState } from 'react'
 
 export default function FacePanel({ show }) {
@@ -16,6 +16,13 @@ export default function FacePanel({ show }) {
     queryFn: fetchPeople,
   })
   
+  const firstSelectedPersonId = selectedPeople?.[0]?.id
+  const { data: firstSelectedPersonPhotos, isLoading: firstSelectedPersonPhotosLoading } = useQuery({
+    queryKey: ['person-photos', firstSelectedPersonId],
+    queryFn: () => fetchPersonPhotos(firstSelectedPersonId),
+    enabled: showGroupDialog && !!firstSelectedPersonId,
+  })
+
   const renameMutation = useMutation({
     mutationFn: ({ id, name }) => renamePerson(id, name),
     onSuccess: () => {
@@ -228,6 +235,30 @@ export default function FacePanel({ show }) {
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
               Creating a group with {selectedPeople.length} people
             </p>
+
+            {(() => {
+              const coverSrc =
+                selectedPeople.find((p) => p.thumbnail_path)?.thumbnail_path ||
+                (firstSelectedPersonPhotos?.photos?.[0]?.id
+                  ? `http://localhost:8000/thumbnails/${firstSelectedPersonPhotos.photos[0].id}/thumbnail.jpg`
+                  : null)
+
+              return (
+                <div className="mb-4">
+                  <div className="w-full aspect-video bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden flex items-center justify-center">
+                    {firstSelectedPersonPhotosLoading ? (
+                      <div className="text-sm text-gray-500">Loading cover...</div>
+                    ) : coverSrc ? (
+                      <img src={coverSrc} alt="Group cover preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-12 h-12 text-gray-400" />
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Cover preview (auto-selected)</p>
+                </div>
+              )
+            })()}
+
             <input
               type="text"
               placeholder="Group name (e.g., Family, Friends)"

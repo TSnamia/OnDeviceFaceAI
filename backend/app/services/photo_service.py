@@ -136,7 +136,19 @@ class PhotoService:
     
     def get_photo(self, photo_id: int) -> Optional[Photo]:
         """Get photo by ID"""
-        return self.db.query(Photo).filter(Photo.id == photo_id).first()
+        photo = self.db.query(Photo).filter(Photo.id == photo_id).first()
+        if photo and photo.file_size is None:
+            # Backfill file_size for older DB entries.
+            try:
+                file_path = Path(photo.file_path)
+                if file_path.exists():
+                    photo.file_size = file_path.stat().st_size
+                    self.db.commit()
+                    self.db.refresh(photo)
+            except Exception:
+                # Keep returning the photo even if stat fails.
+                pass
+        return photo
     
     def get_photos(
         self,
@@ -154,7 +166,24 @@ class PhotoService:
         else:
             query = query.order_by(order_column.desc())
         
-        return query.offset(skip).limit(limit).all()
+        photos = query.offset(skip).limit(limit).all()
+
+        # Backfill file_size for older DB entries where file_size might be NULL.
+        updated = False
+        for photo in photos:
+            if photo.file_size is None:
+                try:
+                    file_path = Path(photo.file_path)
+                    if file_path.exists():
+                        photo.file_size = file_path.stat().st_size
+                        updated = True
+                except Exception:
+                    pass
+
+        if updated:
+            self.db.commit()
+
+        return photos
     
     def delete_photo(self, photo_id: int, delete_file: bool = False) -> bool:
         """Delete a photo"""

@@ -17,8 +17,10 @@ class PhotoResponse(BaseModel):
     id: int
     file_name: str
     file_path: str
+    file_size: Optional[int]
     width: Optional[int]
     height: Optional[int]
+    quality_score: Optional[float]
     taken_at: Optional[datetime]
     imported_at: datetime
     thumbnail_path: Optional[str]
@@ -250,16 +252,43 @@ async def get_high_quality_photos(
     db: Session = Depends(get_db)
 ):
     """Get high quality photos"""
-    photos = db.query(Photo).filter(
-        Photo.quality_score >= threshold
-    ).order_by(Photo.quality_score.desc()).offset(skip).limit(limit).all()
-    
-    total = db.query(Photo).filter(Photo.quality_score >= threshold).count()
-    
+    # On-demand: quality_score null ise bu endpoint çağrıldığında üret.
+    # Bu sayede "processed false / quality_score NULL" durumunda bile UI boş dönmez.
+    from ai_pipeline.quality.quality_assessor import get_quality_assessor
+
+    assessor = get_quality_assessor()
+    matched = []
+    offset = skip
+    scanned = 0
+    max_scanned = max(limit * 5, 50)  # small libs için yeterli
+
+    while len(matched) < limit and scanned < max_scanned:
+        batch = (
+            db.query(Photo)
+            .order_by(Photo.taken_at.desc().nullslast())
+            .offset(offset)
+            .limit(min(limit * 2, max_scanned - scanned))
+            .all()
+        )
+        if not batch:
+            break
+
+        for photo in batch:
+            if photo.quality_score is None:
+                metrics = assessor.assess_photo(photo.file_path) or {}
+                photo.quality_score = metrics.get("overall_score", 0.0) if metrics else None
+
+            if photo.quality_score is not None and photo.quality_score >= threshold:
+                matched.append(photo)
+
+        db.commit()
+        scanned += len(batch)
+        offset += len(batch)
+
     return {
-        "photos": photos,
-        "total": total,
-        "threshold": threshold
+        "photos": [PhotoResponse.from_orm(p) for p in matched[:limit]],
+        "total": len(matched[:limit]),
+        "threshold": threshold,
     }
 
 
@@ -271,20 +300,42 @@ async def get_low_quality_photos(
     db: Session = Depends(get_db)
 ):
     """Get low quality/blurry photos"""
-    photos = db.query(Photo).filter(
-        Photo.quality_score < threshold,
-        Photo.quality_score.isnot(None)
-    ).order_by(Photo.quality_score.asc()).offset(skip).limit(limit).all()
-    
-    total = db.query(Photo).filter(
-        Photo.quality_score < threshold,
-        Photo.quality_score.isnot(None)
-    ).count()
-    
+    # On-demand: quality_score null ise bu endpoint çağrıldığında üret.
+    from ai_pipeline.quality.quality_assessor import get_quality_assessor
+
+    assessor = get_quality_assessor()
+    matched = []
+    offset = skip
+    scanned = 0
+    max_scanned = max(limit * 5, 50)
+
+    while len(matched) < limit and scanned < max_scanned:
+        batch = (
+            db.query(Photo)
+            .order_by(Photo.taken_at.desc().nullslast())
+            .offset(offset)
+            .limit(min(limit * 2, max_scanned - scanned))
+            .all()
+        )
+        if not batch:
+            break
+
+        for photo in batch:
+            if photo.quality_score is None:
+                metrics = assessor.assess_photo(photo.file_path) or {}
+                photo.quality_score = metrics.get("overall_score", 0.0) if metrics else None
+
+            if photo.quality_score is not None and photo.quality_score < threshold:
+                matched.append(photo)
+
+        db.commit()
+        scanned += len(batch)
+        offset += len(batch)
+
     return {
-        "photos": photos,
-        "total": total,
-        "threshold": threshold
+        "photos": [PhotoResponse.from_orm(p) for p in matched[:limit]],
+        "total": len(matched[:limit]),
+        "threshold": threshold,
     }
 
 
