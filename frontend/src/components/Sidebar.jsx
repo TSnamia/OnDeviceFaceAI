@@ -8,7 +8,8 @@ import {
   Sparkles,
   Download,
   LayoutDashboard,
-  MapPin
+  MapPin,
+  Star
 } from 'lucide-react'
 
 const navItems = [
@@ -106,6 +107,23 @@ export default function Sidebar() {
                 <span className="text-sm">Private</span>
               </div>
               <span className="text-xs text-gray-400">🔒</span>
+            </NavLink>
+            
+            <NavLink
+              to="/quality"
+              className={({ isActive }) =>
+                `w-full flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
+                  isActive
+                    ? 'bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300'
+                    : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`
+              }
+            >
+              <div className="flex items-center space-x-3">
+                <Sparkles className="w-4 h-4" />
+                <span className="text-sm">Quality</span>
+              </div>
+              <span className="text-xs text-gray-400">✨</span>
             </NavLink>
           </div>
         </div>

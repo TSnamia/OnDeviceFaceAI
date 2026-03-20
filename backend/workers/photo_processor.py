@@ -7,7 +7,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.models.database import SessionLocal, Photo, ProcessingJob
 from app.services.face_service import FaceService
-from app.core.config import settings
+from app.services.photo_service import PhotoService
+from app.models.database import SessionLocal, ProcessingJob
+from ai_pipeline.quality.quality_assessor import get_quality_assessor
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from ai_pipeline.semantic import get_clip_embedder
 
@@ -81,26 +83,46 @@ class PhotoProcessor:
         photo = db.query(Photo).filter(Photo.id == job.photo_id).first()
         
         if not photo:
-            raise ValueError(f"Photo {job.photo_id} not found")
+            return
         
         job.progress = 10.0
         db.commit()
         
-        faces = self.face_service.detect_faces_in_photo(photo.id)
-        print(f"  Detected {len(faces)} faces in photo {photo.id}")
-        
-        job.progress = 50.0
-        db.commit()
-        
-        # Run clustering if we have faces
-        if len(faces) > 0:
-            print(f"  Running face clustering...")
-            clusters = self.face_service.cluster_all_faces()
-            print(f"  Created {len(clusters)} clusters")
-        
-        job.progress = 70.0
-        db.commit()
-        
+        try:
+            # Assess photo quality
+            quality_assessor = get_quality_assessor()
+            quality_metrics = quality_assessor.assess_photo(photo.file_path)
+            if quality_metrics:
+                photo.quality_score = quality_metrics.get('overall_score', 0.0)
+            
+            # Detect faces
+            faces = self.face_service.detect_faces_in_photo(photo.id)
+            print(f"  Detected {len(faces)} faces in photo {photo.id}")
+            
+            job.progress = 50.0
+            db.commit()
+            
+            # Generate CLIP embedding
+            embedding = self.clip_embedder.get_image_embedding(photo.file_path)
+            if embedding is not None:
+                print(f"  Generated CLIP embedding for photo {photo.id}")
+            
+            job.progress = 70.0
+            db.commit()
+            
+            # Cluster faces after detection
+            if len(faces) > 0:
+                print(f"  Running face clustering...")
+                clusters = self.face_service.cluster_all_faces()
+                print(f"  Created {len(clusters)} clusters")
+            
+            photo.processed = True
+            db.commit()
+            
+        except Exception as e:
+            photo.processing_error = str(e)
+            db.commit()
+            print(f"Error processing photo {photo.id}: {e}")
         embedding = self.clip_embedder.get_image_embedding(photo.file_path)
         if embedding is not None:
             print(f"  Generated CLIP embedding for photo {photo.id}")

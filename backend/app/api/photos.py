@@ -242,6 +242,52 @@ async def get_favorites(
     }
 
 
+@router.get("/quality/high")
+async def get_high_quality_photos(
+    threshold: float = 0.6,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """Get high quality photos"""
+    photos = db.query(Photo).filter(
+        Photo.quality_score >= threshold
+    ).order_by(Photo.quality_score.desc()).offset(skip).limit(limit).all()
+    
+    total = db.query(Photo).filter(Photo.quality_score >= threshold).count()
+    
+    return {
+        "photos": photos,
+        "total": total,
+        "threshold": threshold
+    }
+
+
+@router.get("/quality/low")
+async def get_low_quality_photos(
+    threshold: float = 0.4,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """Get low quality/blurry photos"""
+    photos = db.query(Photo).filter(
+        Photo.quality_score < threshold,
+        Photo.quality_score.isnot(None)
+    ).order_by(Photo.quality_score.asc()).offset(skip).limit(limit).all()
+    
+    total = db.query(Photo).filter(
+        Photo.quality_score < threshold,
+        Photo.quality_score.isnot(None)
+    ).count()
+    
+    return {
+        "photos": photos,
+        "total": total,
+        "threshold": threshold
+    }
+
+
 @router.get("/duplicates/find")
 async def find_duplicates(
     threshold: int = 5,
