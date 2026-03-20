@@ -6,13 +6,37 @@ A production-grade, fully offline web-based intelligent photo archive system wit
 
 ### 🎯 Core Capabilities
 - **Face Recognition**: Detect, cluster, and identify faces using InsightFace
+- **Automatic Face Clustering**: Intelligently groups similar faces into people
+- **Manual Face Merging**: Merge multiple people into one with multi-select UI
+- **Person Groups**: Organize people into groups (Family, Friends, etc.)
 - **Semantic Search**: Search photos by text queries using CLIP embeddings
+- **Search Autocomplete**: Smart dropdown suggestions while typing
 - **Object Detection**: Automatically detect people, pets, vehicles, food, and more
+- **Scene Recognition**: Classify scenes (beach, mountain, city, indoor, etc.)
+- **OCR Text Recognition**: Extract and search text from photos
 - **Event Detection**: Group photos by time, location, and visual similarity
 - **Smart Albums**: Auto-generated albums for Family, Vacation, Friends, Pets, Events
 - **Duplicate Detection**: Find duplicate photos using perceptual hashing
 
-### 🔒 Privacy First
+### � Photo Management
+- **Dashboard**: Overview with statistics, charts, and recent photos
+- **Bulk Operations**: Multi-select photos for batch delete/move
+- **Favorites System**: Star important photos for quick access
+- **Slideshow Mode**: Auto-playing slideshow with speed controls
+- **Photo Editing**: Rotate, adjust brightness/contrast in-browser
+- **Video Support**: Play and manage video files (MP4, MOV, AVI, MKV, WebM)
+- **Map View**: View photos on map based on GPS location
+
+### 👤 People Management
+- **Person Profiles**: Detailed page for each person with all their photos
+- **Person Notes**: Add notes and information about people
+- **Face Count Statistics**: Track how many photos each person appears in
+- **Timeline View**: See person's photos organized by date
+- **Multi-Select**: Select multiple people for batch operations
+
+### � Privacy & Security
+- **Password Protection**: Secure app access with password authentication
+- **Private Albums**: Create password-protected private albums
 - **100% Offline**: No internet or cloud dependency
 - **Local Processing**: All AI runs on your device
 - **Your Data Stays Yours**: Complete privacy and control
@@ -23,6 +47,7 @@ A production-grade, fully offline web-based intelligent photo archive system wit
 - GPU acceleration support
 - Fast FAISS-based similarity search
 - Intelligent caching system
+- Optimized clustering parameters for better face grouping
 
 ## Tech Stack
 
@@ -221,13 +246,17 @@ Models are stored in `models/` directory.
 ## Database Schema
 
 ### Core Tables
-- `photos`: Photo metadata and paths
+- `photos`: Photo metadata, paths, favorites, AI-generated content (OCR, tags, quality)
+  - New fields: `is_favorite`, `is_video`, `video_duration`, `ocr_text`, `object_tags`, `scene_tags`, `quality_score`
 - `faces`: Detected faces with embeddings
-- `people`: Named face clusters
+- `people`: Named face clusters with group assignments
+  - New field: `group_id` for organizing people into groups
+- `person_groups`: Groups of people (Family, Friends, etc.)
 - `embeddings`: CLIP and face vectors
 - `tags`: User-defined tags
 - `events`: Auto-detected events
 - `albums`: Smart and manual albums
+  - New field: `is_private` for password-protected albums
 
 ## API Documentation
 
@@ -290,13 +319,42 @@ MIT License - See LICENSE file for details
 
 ## Roadmap
 
-- [ ] Video support
-- [ ] Advanced editing tools
+### ✅ Completed
+- [x] Face clustering and recognition
+- [x] Person groups and merging
+- [x] Dashboard with statistics
+- [x] Bulk operations
+- [x] Favorites system
+- [x] Slideshow mode
+- [x] Map view
+- [x] Search autocomplete
+- [x] Person profiles with notes
+- [x] Password protection
+- [x] Private albums
+- [x] Video support
+- [x] Photo editing (rotate, brightness, contrast)
+- [x] OCR text recognition
+- [x] Object detection
+- [x] Scene classification
+
+### 🚀 Planned Features
+- [ ] Advanced photo editing (crop, filters, effects)
+- [ ] Face blur/anonymization for privacy
+- [ ] Batch EXIF editing
+- [ ] Photo quality assessment and suggestions
+- [ ] Automatic backup system (local network)
 - [ ] Mobile app (React Native)
-- [ ] Multi-user support
-- [ ] Backup and sync (local network only)
+- [ ] Multi-user support with permissions
 - [ ] Advanced face aging recognition
 - [ ] Custom object detection training
+- [ ] RAW photo format support
+- [ ] Photo comparison view
+- [ ] Advanced duplicate finder with similarity slider
+- [ ] Timeline view with events
+- [ ] Photo stories/memories generation
+- [ ] Facial expression detection
+- [ ] Photo collage creator
+- [ ] Print layout designer
 
 ## Acknowledgments
 
