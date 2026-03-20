@@ -92,6 +92,46 @@ export const processNow = async () => {
   return response.data
 }
 
+export const startAutoRunner = async () => {
+  const response = await api.post('/processing/auto-runner/start')
+  return response.data
+}
+
+export const stopAutoRunner = async () => {
+  const response = await api.post('/processing/auto-runner/stop')
+  return response.data
+}
+
+export const retryFailedJobs = async () => {
+  const response = await api.post('/processing/retry-failed')
+  return response.data
+}
+
+export const skipBrokenJobs = async () => {
+  const response = await api.post('/processing/skip-broken')
+  return response.data
+}
+
+export const getProcessingHealth = async () => {
+  const response = await api.get('/processing/health')
+  return response.data
+}
+
+export const getRunnerConfig = async () => {
+  const response = await api.get('/processing/runner-config')
+  return response.data
+}
+
+export const updateRunnerConfig = async (payload) => {
+  const response = await api.put('/processing/runner-config', payload)
+  return response.data
+}
+
+export const getProcessingJob = async (jobId) => {
+  const response = await api.get(`/processing/jobs/${jobId}`)
+  return response.data
+}
+
 export const unlockPrivateAlbums = async (password) => {
   const response = await api.post('/auth/private-albums/unlock', { password })
   return response.data

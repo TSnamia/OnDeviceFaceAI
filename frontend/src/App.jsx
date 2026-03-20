@@ -15,6 +15,7 @@ import QualityFilter from './pages/QualityFilter'
 import ExpressionFilter from './pages/ExpressionFilter'
 import Search from './pages/Search'
 import Processing from './pages/Processing'
+import Settings from './pages/Settings'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -67,6 +68,7 @@ function App() {
             <Route path="/expressions" element={<ExpressionFilter />} />
             <Route path="/search" element={<Search />} />
             <Route path="/processing" element={<Processing />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/login" element={<Navigate to="/" replace />} />
           </Routes>
         </Layout>

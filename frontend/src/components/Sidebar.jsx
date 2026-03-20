@@ -11,7 +11,8 @@ import {
   MapPin,
   Star,
   Smile,
-  HardDrive
+  HardDrive,
+  Settings
 } from 'lucide-react'
 
 const navItems = [
@@ -21,6 +22,7 @@ const navItems = [
   { path: '/albums', icon: FolderHeart, label: 'Albums' },
   { path: '/map', icon: MapPin, label: 'Map' },
   { path: '/processing', icon: HardDrive, label: 'Processing' },
+  { path: '/settings', icon: Settings, label: 'Settings' },
 ]
 
 const smartAlbums = [
