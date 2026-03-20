@@ -8,11 +8,11 @@ from .expressions import router as expressions_router
 
 api_router = APIRouter()
 
-api_router.include_router(photos_router, prefix="/photos", tags=["photos"])
-api_router.include_router(faces_router, prefix="/faces", tags=["faces"])
+api_router.include_router(photos_router, tags=["photos"])
+api_router.include_router(faces_router, tags=["faces"])
 api_router.include_router(export_router)
 api_router.include_router(groups_router)
-api_router.include_router(similarity_router, prefix="/similarity", tags=["similarity"])
-api_router.include_router(expressions_router, prefix="/expressions", tags=["expressions"])
+api_router.include_router(similarity_router, tags=["similarity"])
+api_router.include_router(expressions_router, tags=["expressions"])
 
 __all__ = ['api_router']
