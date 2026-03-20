@@ -12,6 +12,7 @@ import Map from './pages/Map'
 import Favorites from './pages/Favorites'
 import SimilarPhotos from './pages/SimilarPhotos'
 import QualityFilter from './pages/QualityFilter'
+import ExpressionFilter from './pages/ExpressionFilter'
 import Search from './pages/Search'
 
 function App() {
@@ -62,6 +63,7 @@ function App() {
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/similar" element={<SimilarPhotos />} />
             <Route path="/quality" element={<QualityFilter />} />
+            <Route path="/expressions" element={<ExpressionFilter />} />
             <Route path="/search" element={<Search />} />
             <Route path="/login" element={<Navigate to="/" replace />} />
           </Routes>
