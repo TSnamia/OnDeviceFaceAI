@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { BarChart3, Users, Image, Calendar, TrendingUp, Clock } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { BarChart3, Users, Image, Calendar, TrendingUp, Clock, Upload, Play, Sparkles, HardDrive, AlertTriangle } from 'lucide-react'
 import { fetchPhotos, fetchPeople } from '../services/api'
 
 export default function Dashboard() {
@@ -15,6 +16,7 @@ export default function Dashboard() {
   
   const photos = photosData.photos || []
   const isLoading = photosLoading || peopleLoading
+  const navigate = useNavigate()
   
   // Calculate statistics
   const stats = {
@@ -23,6 +25,17 @@ export default function Dashboard() {
     processedPhotos: photos.filter(p => p.processed).length,
     totalFaces: people.reduce((sum, p) => sum + p.face_count, 0),
   }
+  
+  // Storage statistics
+  const totalSize = photos.reduce((sum, p) => sum + (p.file_size || 0), 0)
+  const avgSize = totalSize / photos.length || 0
+  const storageMB = (totalSize / (1024 * 1024)).toFixed(2)
+  const storageGB = (totalSize / (1024 * 1024 * 1024)).toFixed(2)
+  
+  // Quality statistics
+  const highQuality = photos.filter(p => p.quality_score >= 0.6).length
+  const lowQuality = photos.filter(p => p.quality_score < 0.4 && p.quality_score !== null).length
+  const qualityRate = photos.length > 0 ? Math.round((highQuality / photos.length) * 100) : 0
   
   // Photos by month
   const photosByMonth = photos.reduce((acc, photo) => {
@@ -63,6 +76,41 @@ export default function Dashboard() {
           <p className="text-gray-600 dark:text-gray-400">Overview of your photo library</p>
         </div>
         
+        {/* Quick Actions */}
+        <div className="card p-6">
+          <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <button
+              onClick={() => document.querySelector('input[type="file"]')?.click()}
+              className="flex flex-col items-center justify-center p-4 rounded-lg bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+            >
+              <Upload className="w-6 h-6 text-primary-600 dark:text-primary-400 mb-2" />
+              <span className="text-sm font-medium">Upload</span>
+            </button>
+            <button
+              onClick={() => navigate('/gallery')}
+              className="flex flex-col items-center justify-center p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+            >
+              <Image className="w-6 h-6 text-blue-600 dark:text-blue-400 mb-2" />
+              <span className="text-sm font-medium">Gallery</span>
+            </button>
+            <button
+              onClick={() => navigate('/people')}
+              className="flex flex-col items-center justify-center p-4 rounded-lg bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+            >
+              <Users className="w-6 h-6 text-green-600 dark:text-green-400 mb-2" />
+              <span className="text-sm font-medium">People</span>
+            </button>
+            <button
+              onClick={() => navigate('/quality')}
+              className="flex flex-col items-center justify-center p-4 rounded-lg bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
+            >
+              <Sparkles className="w-6 h-6 text-purple-600 dark:text-purple-400 mb-2" />
+              <span className="text-sm font-medium">Quality</span>
+            </button>
+          </div>
+        </div>
+        
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
@@ -93,6 +141,85 @@ export default function Dashboard() {
             subtitle="Complete"
             color="orange"
           />
+        </div>
+        
+        {/* Storage & Quality Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Storage Usage */}
+          <div className="card p-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
+              <HardDrive className="w-5 h-5" />
+              <span>Storage Usage</span>
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Total Size</span>
+                  <span className="text-2xl font-bold">{storageGB > 1 ? `${storageGB} GB` : `${storageMB} MB`}</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 h-full"
+                    style={{ width: `${Math.min((totalSize / (10 * 1024 * 1024 * 1024)) * 100, 100)}%` }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">10 GB available</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Avg Photo Size</p>
+                  <p className="text-lg font-semibold">{(avgSize / (1024 * 1024)).toFixed(2)} MB</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Files</p>
+                  <p className="text-lg font-semibold">{stats.totalPhotos}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Quality Overview */}
+          <div className="card p-6">
+            <h3 className="text-lg font-semibold mb-4 flex items-center space-x-2">
+              <Sparkles className="w-5 h-5" />
+              <span>Quality Overview</span>
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Quality Rate</span>
+                  <span className="text-2xl font-bold">{qualityRate}%</span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 h-full"
+                    style={{ width: `${qualityRate}%` }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">High quality photos</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center space-x-2">
+                  <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                    <Sparkles className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">High Quality</p>
+                    <p className="text-lg font-semibold">{highQuality}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="p-2 bg-red-100 dark:bg-red-900 rounded-lg">
+                    <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Low Quality</p>
+                    <p className="text-lg font-semibold">{lowQuality}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         
         {/* Charts Row */}
