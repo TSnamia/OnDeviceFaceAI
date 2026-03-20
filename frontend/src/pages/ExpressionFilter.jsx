@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2, Smile, Frown, Meh, Angry, Zap } from 'lucide-react'
 import PhotoGrid from '../components/PhotoGrid'

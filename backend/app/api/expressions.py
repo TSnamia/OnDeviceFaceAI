@@ -4,7 +4,7 @@ from typing import List
 from app.models.database import get_db, Photo
 from ai_pipeline.expression.expression_detector import get_expression_detector
 
-router = APIRouter()
+router = APIRouter(prefix="/expressions")
 
 
 @router.get("/photos/{photo_id}/expressions")
