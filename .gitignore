@@ -64,6 +64,10 @@ thumbnails/
 temp/
 *.cache
 
+# Photo files
+backend/data/photos/
+backend/data/uploads/
+
 # Logs
 logs/
 *.log
