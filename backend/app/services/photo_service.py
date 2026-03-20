@@ -333,6 +333,17 @@ class PhotoService:
         try:
             img = Image.open(photo.file_path)
             
+            # Convert RGBA/P to RGB for JPEG compatibility
+            if img.mode in ('RGBA', 'LA', 'P'):
+                # Create white background
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                background.paste(img, mask=img.split()[-1] if img.mode in ('RGBA', 'LA') else None)
+                img = background
+            elif img.mode != 'RGB':
+                img = img.convert('RGB')
+            
             thumb_dir = settings.THUMBNAILS_DIR / str(photo.id)
             thumb_dir.mkdir(parents=True, exist_ok=True)
             

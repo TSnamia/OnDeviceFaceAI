@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     # Image Processing
     THUMBNAIL_SIZE: tuple = (300, 300)
     PREVIEW_SIZE: tuple = (1920, 1080)
-    SUPPORTED_FORMATS: list = [".jpg", ".jpeg", ".png", ".heic", ".heif"]
+    SUPPORTED_FORMATS: list = [".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif", ".bmp", ".gif"]
     SUPPORTED_VIDEO_FORMATS: list = [".mp4", ".mov", ".avi", ".mkv", ".webm"]
     
     # Duplicate Detection

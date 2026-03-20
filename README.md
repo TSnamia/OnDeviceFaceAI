@@ -192,34 +192,65 @@ Navigate to `http://localhost:5173`
 
 ## Usage
 
-### Importing Photos
-1. Click "Import Photos" in the left panel
-2. Select folder or drag-and-drop photos
-3. AI processing starts automatically in background
+### First Time Setup
+1. Open the app at `http://localhost:5173`
+2. Set a password for app protection
+3. Start importing photos
 
-### Face Recognition
-1. Faces are automatically detected and clustered
-2. View face clusters in the right panel
-3. Click a face to rename or merge clusters
-4. Search by person name or combination
+### Importing Photos
+1. Click "Import" button in the header
+2. Select folder or drag-and-drop photos/videos
+3. AI processing starts automatically in background
+4. Faces are detected and automatically clustered
+
+### Dashboard
+- View total photos, people, and statistics
+- See photos by month chart
+- View top people by photo count
+- Quick access to recently added photos
+
+### Face Recognition & People
+1. Faces are automatically detected and clustered into people
+2. View people in the People page or right panel
+3. Click a person to view their profile with all photos
+4. **Multi-select**: Click multiple people to merge or group them
+5. **Rename**: Select one person and click "Rename"
+6. **Merge**: Select 2+ people and click "Merge" to combine them
+7. **Group**: Select people and click "Group" to create family/friend groups
+8. **Add Notes**: Click person profile to add notes about them
 
 ### Search
-- **Text Search**: "beach sunset", "birthday party"
+- **Text Search**: Type in search bar - autocomplete suggests people and photos
 - **People Search**: "John", "John and Sarah"
-- **Date Range**: Filter by date
-- **Smart Filters**: Events, objects, locations
+- **Smart Suggestions**: Dropdown shows matching people and photos as you type
+
+### Photo Management
+- **Favorites**: Hover over photo and click star icon
+- **Bulk Select**: Click "Select" button, choose multiple photos
+- **Bulk Delete**: Select photos and click trash icon
+- **Slideshow**: Click "Slideshow" button for auto-playing presentation
+- **Edit Photo**: Click photo, then "Edit" to adjust rotation, brightness, contrast
+- **Video Playback**: Videos show play icon, click to watch with controls
+
+### Map View
+- View photos with GPS data on map
+- Photos grouped by location
+- Click location to see all photos from that place
+
+### Private Albums
+1. Navigate to "Private" in sidebar
+2. Enter password (default: "private")
+3. Create password-protected albums for sensitive photos
 
 ### Smart Albums
 Auto-generated albums appear in the left sidebar:
+- **Favorites**: All starred photos
 - **People**: Albums for each recognized person
 - **Events**: Grouped by time and visual similarity
 - **Objects**: Pets, food, vehicles, etc.
 
-### Export
-1. Select photos or use filters
-2. Click "Export Selected"
-3. Choose destination folder
-4. Photos organized by rules (people/events/dates)
+### Logout
+- Click logout icon (🚪) in header to lock the app
 
 ## Performance Optimization
 
