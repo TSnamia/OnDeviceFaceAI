@@ -3,7 +3,7 @@ import Sidebar from './Sidebar'
 import FacePanel from './FacePanel'
 import Header from './Header'
 
-export default function Layout({ children }) {
+export default function Layout({ children, onLogout }) {
   const [showFacePanel, setShowFacePanel] = useState(true)
   const [darkMode, setDarkMode] = useState(false)
 
@@ -14,6 +14,7 @@ export default function Layout({ children }) {
         setDarkMode={setDarkMode}
         showFacePanel={showFacePanel}
         setShowFacePanel={setShowFacePanel}
+        onLogout={onLogout}
       />
       
       <div className="flex-1 flex overflow-hidden">

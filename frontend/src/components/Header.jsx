@@ -1,11 +1,11 @@
-import { Moon, Sun, Users, Search, Upload } from 'lucide-react'
+import { Moon, Sun, Users, Search, Upload, LogOut } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { fetchPeople, fetchPhotos } from '../services/api'
 import UploadModal from './UploadModal'
 
-export default function Header({ darkMode, setDarkMode, showFacePanel, setShowFacePanel }) {
+export default function Header({ darkMode, setDarkMode, showFacePanel, setShowFacePanel, onLogout }) {
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -127,10 +127,20 @@ export default function Header({ darkMode, setDarkMode, showFacePanel, setShowFa
           
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="btn btn-ghost"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
+          
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-red-600 dark:text-red-400"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </header>
       

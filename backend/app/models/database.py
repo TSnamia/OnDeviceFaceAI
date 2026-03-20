@@ -41,6 +41,8 @@ class Photo(Base):
     width = Column(Integer)
     height = Column(Integer)
     format = Column(String)
+    is_video = Column(Boolean, default=False, index=True)
+    video_duration = Column(Float)  # Duration in seconds
     
     taken_at = Column(DateTime, index=True)
     imported_at = Column(DateTime, default=datetime.utcnow, index=True)
