@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Loader2, Smile, Frown, Meh, Angry, Surprise } from 'lucide-react'
+import { Loader2, Smile, Frown, Meh, Angry, Zap } from 'lucide-react'
 import PhotoGrid from '../components/PhotoGrid'
 
 const expressionIcons = {
@@ -8,7 +8,7 @@ const expressionIcons = {
   sad: Frown,
   neutral: Meh,
   angry: Angry,
-  surprise: Surprise
+  surprise: Zap
 }
 
 const expressionColors = {
