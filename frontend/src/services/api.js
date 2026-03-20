@@ -137,6 +137,14 @@ export const unlockPrivateAlbums = async (password) => {
   return response.data
 }
 
+export const updatePrivateAlbumsPassword = async ({ currentPassword, newPassword }) => {
+  const response = await api.put('/auth/private-albums/password', {
+    current_password: currentPassword,
+    new_password: newPassword,
+  })
+  return response.data
+}
+
 export const fetchAlbums = async () => {
   const response = await api.get('/albums')
   return response.data
