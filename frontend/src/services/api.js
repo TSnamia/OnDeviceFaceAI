@@ -82,6 +82,44 @@ export const fetchPeople = async () => {
   return response.data
 }
 
+export const listProcessingJobs = async () => {
+  const response = await api.get('/processing/jobs')
+  return response.data
+}
+
+export const processNow = async () => {
+  const response = await api.post('/processing/process-now')
+  return response.data
+}
+
+export const unlockPrivateAlbums = async (password) => {
+  const response = await api.post('/auth/private-albums/unlock', { password })
+  return response.data
+}
+
+export const fetchAlbums = async () => {
+  const response = await api.get('/albums')
+  return response.data
+}
+
+export const createAlbum = async ({ name, description = null }) => {
+  const response = await api.post('/albums', { name, description })
+  return response.data
+}
+
+export const fetchAlbumPhotos = async (albumId) => {
+  const response = await api.get(`/albums/${albumId}/photos`)
+  return response.data
+}
+
+export const addPhotosToAlbum = async ({ albumId, photoIds, coverPhotoId = null }) => {
+  const response = await api.post(`/albums/${albumId}/photos`, {
+    photo_ids: photoIds,
+    cover_photo_id: coverPhotoId,
+  })
+  return response.data
+}
+
 export const fetchPerson = async (personId) => {
   const response = await api.get(`/faces/people/${personId}`)
   return response.data

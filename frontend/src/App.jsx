@@ -14,6 +14,7 @@ import SimilarPhotos from './pages/SimilarPhotos'
 import QualityFilter from './pages/QualityFilter'
 import ExpressionFilter from './pages/ExpressionFilter'
 import Search from './pages/Search'
+import Processing from './pages/Processing'
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -65,6 +66,7 @@ function App() {
             <Route path="/quality" element={<QualityFilter />} />
             <Route path="/expressions" element={<ExpressionFilter />} />
             <Route path="/search" element={<Search />} />
+            <Route path="/processing" element={<Processing />} />
             <Route path="/login" element={<Navigate to="/" replace />} />
           </Routes>
         </Layout>

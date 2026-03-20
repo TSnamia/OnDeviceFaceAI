@@ -1,9 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { BarChart3, Users, Image, Calendar, TrendingUp, Clock, Upload, Play, Sparkles, HardDrive, AlertTriangle } from 'lucide-react'
 import { fetchPhotos, fetchPeople } from '../services/api'
+import UploadModal from '../components/UploadModal'
 
 export default function Dashboard() {
+  const [showUploadModal, setShowUploadModal] = useState(false)
+
   const { data: photosData = {}, isLoading: photosLoading } = useQuery({
     queryKey: ['photos'],
     queryFn: () => fetchPhotos(0, 10000),
@@ -81,7 +85,7 @@ export default function Dashboard() {
           <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <button
-              onClick={() => document.querySelector('input[type="file"]')?.click()}
+              onClick={() => setShowUploadModal(true)}
               className="flex flex-col items-center justify-center p-4 rounded-lg bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
             >
               <Upload className="w-6 h-6 text-primary-600 dark:text-primary-400 mb-2" />
@@ -288,6 +292,8 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {showUploadModal && <UploadModal onClose={() => setShowUploadModal(false)} />}
     </div>
   )
 }

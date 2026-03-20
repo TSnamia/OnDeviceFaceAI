@@ -1,22 +1,29 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { Lock, Plus, Eye, EyeOff } from 'lucide-react'
+import { useMutation } from '@tanstack/react-query'
+import { unlockPrivateAlbums } from '../services/api'
 
 export default function PrivateAlbums() {
   const [showPassword, setShowPassword] = useState(false)
   const [password, setPassword] = useState('')
   const [isUnlocked, setIsUnlocked] = useState(false)
+  const [authError, setAuthError] = useState(null)
+
+  const unlockMutation = useMutation({
+    mutationFn: () => unlockPrivateAlbums(password),
+    onSuccess: () => {
+      setIsUnlocked(true)
+      setAuthError(null)
+    },
+    onError: (err) => {
+      setAuthError(err?.response?.data?.detail || 'Incorrect password')
+    },
+  })
 
   const handleUnlock = (e) => {
     e.preventDefault()
-    // Simple password check - in production, this should be server-side
-    const privatePassword = localStorage.getItem('private_albums_password') || 'private'
-    
-    if (password === privatePassword) {
-      setIsUnlocked(true)
-    } else {
-      alert('Incorrect password')
-    }
+    if (!password.trim()) return
+    unlockMutation.mutate()
   }
 
   if (!isUnlocked) {
@@ -57,9 +64,15 @@ export default function PrivateAlbums() {
               </div>
 
               <button type="submit" className="w-full btn btn-primary">
-                Unlock
+                {unlockMutation.isPending ? 'Unlocking...' : 'Unlock'}
               </button>
             </form>
+
+            {authError && (
+              <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm">
+                {authError}
+              </div>
+            )}
 
             <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
               <p className="text-xs text-gray-600 dark:text-gray-400 text-center">

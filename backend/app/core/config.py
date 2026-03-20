@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     BATCH_SIZE: int = 32
     MAX_WORKERS: int = 4
     USE_GPU: bool = True
+
+    # Security
+    # NOTE: Default is "private". For real deployments override via environment variables.
+    PRIVATE_ALBUM_PASSWORD: str = "private"
     
     # Face Recognition
     FACE_MODEL_NAME: str = "buffalo_l"

@@ -251,7 +251,9 @@ class ProcessingJob(Base):
 
 engine = create_engine(
     settings.DATABASE_URL,
-    connect_args={"check_same_thread": False}
+    # SQLite reads/writes can block each other when processing runs.
+    # Keep timeout low so UI endpoints don't hang indefinitely.
+    connect_args={"check_same_thread": False, "timeout": 1}
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

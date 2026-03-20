@@ -9,6 +9,7 @@ from app.models.database import SessionLocal, Photo, ProcessingJob
 from app.services.face_service import FaceService
 from app.services.photo_service import PhotoService
 from app.models.database import SessionLocal, ProcessingJob
+from app.core.config import settings
 from ai_pipeline.quality.quality_assessor import get_quality_assessor
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from ai_pipeline.semantic import get_clip_embedder

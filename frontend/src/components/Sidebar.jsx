@@ -10,7 +10,8 @@ import {
   LayoutDashboard,
   MapPin,
   Star,
-  Smile
+  Smile,
+  HardDrive
 } from 'lucide-react'
 
 const navItems = [
@@ -19,6 +20,7 @@ const navItems = [
   { path: '/people', icon: Users, label: 'People' },
   { path: '/albums', icon: FolderHeart, label: 'Albums' },
   { path: '/map', icon: MapPin, label: 'Map' },
+  { path: '/processing', icon: HardDrive, label: 'Processing' },
 ]
 
 const smartAlbums = [
