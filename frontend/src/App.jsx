@@ -10,6 +10,7 @@ import Albums from './pages/Albums'
 import PrivateAlbums from './pages/PrivateAlbums'
 import Map from './pages/Map'
 import Favorites from './pages/Favorites'
+import SimilarPhotos from './pages/SimilarPhotos'
 import Search from './pages/Search'
 
 function App() {
@@ -58,6 +59,7 @@ function App() {
             <Route path="/albums/private" element={<PrivateAlbums />} />
             <Route path="/map" element={<Map />} />
             <Route path="/favorites" element={<Favorites />} />
+            <Route path="/similar" element={<SimilarPhotos />} />
             <Route path="/search" element={<Search />} />
             <Route path="/login" element={<Navigate to="/" replace />} />
           </Routes>

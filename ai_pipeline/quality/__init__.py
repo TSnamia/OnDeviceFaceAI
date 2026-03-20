@@ -1,0 +1,1 @@
+# Photo quality assessment module
