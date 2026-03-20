@@ -1,13 +1,20 @@
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import BaseModel
 from sqlalchemy.exc import OperationalError
+import multiprocessing
+import threading
 
 from app.models.database import get_db, ProcessingJob
 from workers.photo_processor import PhotoProcessor
 
 router = APIRouter(prefix="/processing", tags=["processing"])
+
+def _process_pending_child(max_jobs: int):
+    """Child process entrypoint (must be top-level for multiprocessing spawn)."""
+    processor = PhotoProcessor()
+    processor.process_pending_jobs(max_jobs=max_jobs)
 
 
 class ProcessingJobResponse(BaseModel):
@@ -61,20 +68,23 @@ async def list_processing_jobs(db: Session = Depends(get_db)):
 
 
 @router.post("/process-now", response_model=ProcessNowResponse)
-async def process_now(background_tasks: BackgroundTasks):
+async def process_now():
     """
-    Start processing pending jobs in background.
-    This is useful in dev / single-user setups where you don't run the worker separately.
+    Start processing pending jobs in a separate process.
+
+    Important: This endpoint should NEVER block the FastAPI server. The underlying
+    processing is CPU/GPU heavy and can hold the GIL; therefore we spawn a child
+    process instead of using FastAPI BackgroundTasks.
     """
+    # Prevent spawning multiple concurrent child workers from the API process.
+    # (This is best-effort; child processes may still overlap if triggered externally.)
+    if not hasattr(process_now, "_lock"):
+        process_now._lock = threading.Lock()
 
-    def _run():
-        try:
-            processor = PhotoProcessor()
-            processor.process_pending_jobs()
-        except Exception:
-            # Swallow errors: job-level errors are already stored in DB by PhotoProcessor.
-            pass
+    with process_now._lock:  # type: ignore[attr-defined]
+        # Keep it small: one click should not lock the DB/CPU for too long.
+        child = multiprocessing.Process(target=_process_pending_child, args=(1,), daemon=True)
+        child.start()
 
-    background_tasks.add_task(_run)
-    return {"started": True, "message": "Processing started in background"}
+    return {"started": True, "message": "Processing started in a separate process"}
 

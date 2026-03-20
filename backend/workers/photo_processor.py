@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 import time
 from datetime import datetime
+from datetime import timedelta
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -37,14 +38,41 @@ class PhotoProcessor:
                 print(f"Error in processor loop: {e}")
                 time.sleep(10)
     
-    def process_pending_jobs(self):
+    def process_pending_jobs(self, max_jobs: int = None):
         """Process pending jobs from the queue"""
         db = SessionLocal()
         
         try:
-            jobs = db.query(ProcessingJob).filter(
-                ProcessingJob.status == 'pending'
-            ).limit(settings.BATCH_SIZE).all()
+            # If jobs were left in 'processing' state (e.g., worker crash/OOM kill),
+            # reset them back to 'pending' after a short timeout.
+            stale_after = getattr(settings, "PROCESS_STALE_AFTER_SECONDS", 300)
+            stale_cutoff = datetime.utcnow() - timedelta(seconds=int(stale_after))
+            db.query(ProcessingJob).filter(
+                ProcessingJob.status == "processing",
+                ProcessingJob.started_at.isnot(None),
+                ProcessingJob.started_at < stale_cutoff,
+            ).update(
+                {
+                    ProcessingJob.status: "pending",
+                    ProcessingJob.progress: 0.0,
+                    ProcessingJob.error_message: None,
+                    ProcessingJob.started_at: None,
+                    ProcessingJob.completed_at: None,
+                },
+                synchronize_session=False,
+            )
+            db.commit()
+
+            job_limit = settings.BATCH_SIZE
+            if max_jobs is not None:
+                job_limit = max(1, min(job_limit, int(max_jobs)))
+            jobs = (
+                db.query(ProcessingJob)
+                .filter(ProcessingJob.status == 'pending')
+                .order_by(ProcessingJob.id.asc())
+                .limit(job_limit)
+                .all()
+            )
             
             if not jobs:
                 return
@@ -52,7 +80,7 @@ class PhotoProcessor:
             if self.face_service is None:
                 self.face_service = FaceService(db)
             
-            if self.clip_embedder is None:
+            if settings.PROCESS_CLIP_EMBEDDINGS and self.clip_embedder is None:
                 self.clip_embedder = get_clip_embedder()
             
             for job in jobs:
@@ -104,9 +132,10 @@ class PhotoProcessor:
             db.commit()
             
             # Generate CLIP embedding
-            embedding = self.clip_embedder.get_image_embedding(photo.file_path)
-            if embedding is not None:
-                print(f"  Generated CLIP embedding for photo {photo.id}")
+            if settings.PROCESS_CLIP_EMBEDDINGS:
+                embedding = self.clip_embedder.get_image_embedding(photo.file_path)
+                if embedding is not None:
+                    print(f"  Generated CLIP embedding for photo {photo.id}")
             
             job.progress = 70.0
             db.commit()
@@ -124,14 +153,10 @@ class PhotoProcessor:
             photo.processing_error = str(e)
             db.commit()
             print(f"Error processing photo {photo.id}: {e}")
-        embedding = self.clip_embedder.get_image_embedding(photo.file_path)
-        if embedding is not None:
-            print(f"  Generated CLIP embedding for photo {photo.id}")
-        
+            # Bubble up so the caller marks the job as failed.
+            raise
+
         job.progress = 90.0
-        db.commit()
-        
-        photo.processed = True
         db.commit()
 
 

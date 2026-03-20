@@ -33,6 +33,11 @@ class Settings(BaseSettings):
     MAX_WORKERS: int = 4
     USE_GPU: bool = True
 
+    # Processing controls
+    # CLIP embeddings are heavy (can OOM on some machines).
+    # Turn off if you only need face clustering / quality / expressions.
+    PROCESS_CLIP_EMBEDDINGS: bool = False
+
     # Security
     # NOTE: Default is "private". For real deployments override via environment variables.
     PRIVATE_ALBUM_PASSWORD: str = "private"
