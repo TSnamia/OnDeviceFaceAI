@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = 'http://localhost:8000/api/v1'
+const API_BASE_URL = 'http://127.0.0.1:8000/api/v1'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -10,10 +10,17 @@ const api = axios.create({
 })
 
 export const fetchPhotos = async (skip = 0, limit = 100) => {
-  const response = await api.get('/photos/', {
-    params: { skip, limit }
-  })
-  return response.data
+  console.log('Fetching photos from:', `${API_BASE_URL}/photos/`)
+  try {
+    const response = await api.get('/photos/', {
+      params: { skip, limit }
+    })
+    console.log('Photos response:', response.data)
+    return response.data
+  } catch (error) {
+    console.error('Error fetching photos:', error)
+    throw error
+  }
 }
 
 export const fetchPhoto = async (photoId) => {

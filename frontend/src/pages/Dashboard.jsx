@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BarChart3, Users, Image, Calendar, TrendingUp, Clock, Upload, Play, Sparkles, HardDrive, AlertTriangle } from 'lucide-react'
 import { fetchPhotos, fetchPeople } from '../services/api'
 import UploadModal from '../components/UploadModal'
 
 export default function Dashboard() {
+  const { t } = useTranslation()
   const [showUploadModal, setShowUploadModal] = useState(false)
 
   const { data: photosData = {}, isLoading: photosLoading } = useQuery({
@@ -66,7 +68,7 @@ export default function Dashboard() {
   if (isLoading) {
     return (
       <div className="h-full flex items-center justify-center">
-        <div className="text-gray-500">Loading dashboard...</div>
+        <div className="text-gray-500">{t('common.loading')}...</div>
       </div>
     )
   }
@@ -76,34 +78,34 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-400">Overview of your photo library</p>
+          <h1 className="text-3xl font-bold mb-2">{t('dashboard.title')}</h1>
+          <p className="text-gray-600 dark:text-gray-400">{t('app.subtitle')}</p>
         </div>
         
         {/* Quick Actions */}
         <div className="card p-6">
-          <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('common.search')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <button
               onClick={() => setShowUploadModal(true)}
               className="flex flex-col items-center justify-center p-4 rounded-lg bg-primary-50 dark:bg-primary-900/20 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
             >
               <Upload className="w-6 h-6 text-primary-600 dark:text-primary-400 mb-2" />
-              <span className="text-sm font-medium">Upload</span>
+              <span className="text-sm font-medium">{t('common.upload')}</span>
             </button>
             <button
               onClick={() => navigate('/gallery')}
               className="flex flex-col items-center justify-center p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
             >
               <Image className="w-6 h-6 text-blue-600 dark:text-blue-400 mb-2" />
-              <span className="text-sm font-medium">Gallery</span>
+              <span className="text-sm font-medium">{t('navigation.gallery')}</span>
             </button>
             <button
               onClick={() => navigate('/people')}
               className="flex flex-col items-center justify-center p-4 rounded-lg bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
             >
               <Users className="w-6 h-6 text-green-600 dark:text-green-400 mb-2" />
-              <span className="text-sm font-medium">People</span>
+              <span className="text-sm font-medium">{t('navigation.people')}</span>
             </button>
             <button
               onClick={() => navigate('/quality')}
@@ -119,14 +121,14 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             icon={<Image className="w-6 h-6" />}
-            title="Total Photos"
+            title={t('dashboard.totalPhotos')}
             value={stats.totalPhotos}
             subtitle={`${stats.processedPhotos} processed`}
             color="blue"
           />
           <StatCard
             icon={<Users className="w-6 h-6" />}
-            title="People"
+            title={t('dashboard.totalPeople')}
             value={stats.totalPeople}
             subtitle={`${stats.totalFaces} faces detected`}
             color="green"

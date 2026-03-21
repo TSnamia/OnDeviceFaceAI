@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { User, Loader2, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { fetchPeople, fetchPersonPhotos } from '../services/api'
 import { useState } from 'react'
 
 export default function People() {
+  const { t } = useTranslation()
   const [selectedPerson, setSelectedPerson] = useState(null)
   const navigate = useNavigate()
   
@@ -43,7 +45,7 @@ export default function People() {
         <div className="text-center text-gray-500">
           <User className="w-16 h-16 mx-auto mb-4 opacity-50" />
           <p className="text-lg">No people detected yet</p>
-          <p className="text-sm mt-1">Import photos to start face recognition</p>
+          <p className="text-sm mt-1">{t('navigation.import')} {t('common.search')}</p>
         </div>
       </div>
     )

@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Loader2, CheckSquare, Trash2, FolderInput, X, Play, Download } from 'lucide-react'
 import { fetchPhotos } from '../services/api'
 import PhotoGrid from '../components/PhotoGrid'
 import Slideshow from '../components/Slideshow'
 
 export default function Gallery() {
+  const { t } = useTranslation()
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedPhotos, setSelectedPhotos] = useState([])
   const [showSlideshow, setShowSlideshow] = useState(false)
@@ -119,8 +121,8 @@ export default function Gallery() {
       <div className="h-full flex items-center justify-center">
         <div className="text-center text-gray-500">
           <FolderInput className="w-16 h-16 mx-auto mb-4 opacity-50" />
-          <p className="text-lg">No photos yet</p>
-          <p className="text-sm mt-1">Click Import to add your photos</p>
+          <p className="text-lg">{t('gallery.noPhotos')}</p>
+          <p className="text-sm mt-1">{t('navigation.import')} {t('common.search')}</p>
         </div>
       </div>
     )

@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Lock, Eye, EyeOff } from 'lucide-react'
 
 export default function Login({ onLogin }) {
+  const { t } = useTranslation()
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
@@ -30,10 +32,10 @@ export default function Login({ onLogin }) {
         onLogin()
         navigate('/')
       } else {
-        setError('Incorrect password')
+        setError(t('auth.incorrectPassword'))
       }
     } catch (err) {
-      setError('An error occurred')
+      setError(t('messages.errorOccurred'))
     } finally {
       setIsLoading(false)
     }
@@ -49,10 +51,10 @@ export default function Login({ onLogin }) {
               <Lock className="w-8 h-8 text-primary-600 dark:text-primary-400" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              OnDeviceFaceAI
+              {t('app.title')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              {localStorage.getItem('app_password') ? 'Enter your password' : 'Set your password'}
+              {localStorage.getItem('app_password') ? t('auth.enterPassword') : t('auth.setPassword')}
             </p>
           </div>
 
@@ -60,14 +62,14 @@ export default function Login({ onLogin }) {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Password
+                {t('auth.password')}
               </label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
+                  placeholder={t('auth.enterPassword')}
                   className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   required
                   minLength={4}
@@ -93,7 +95,7 @@ export default function Login({ onLogin }) {
               disabled={isLoading}
               className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Loading...' : localStorage.getItem('app_password') ? 'Unlock' : 'Set Password'}
+              {isLoading ? t('common.loading') : localStorage.getItem('app_password') ? t('auth.login') : t('auth.setPassword')}
             </button>
           </form>
 
@@ -101,8 +103,8 @@ export default function Login({ onLogin }) {
           <div className="mt-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
             <p className="text-xs text-gray-600 dark:text-gray-400 text-center">
               {localStorage.getItem('app_password') 
-                ? 'Your photos are protected with a password'
-                : 'Create a password to protect your photo library'
+                ? t('auth.password')
+                : t('auth.setPassword')
               }
             </p>
           </div>

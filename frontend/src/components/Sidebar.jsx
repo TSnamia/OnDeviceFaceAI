@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { 
   Image, 
   Users, 
@@ -15,24 +16,26 @@ import {
   Settings
 } from 'lucide-react'
 
-const navItems = [
-  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/gallery', icon: Image, label: 'All Photos' },
-  { path: '/people', icon: Users, label: 'People' },
-  { path: '/albums', icon: FolderHeart, label: 'Albums' },
-  { path: '/map', icon: MapPin, label: 'Map' },
-  { path: '/processing', icon: HardDrive, label: 'Processing' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
-]
-
-const smartAlbums = [
-  { id: 'family', label: 'Family', icon: Users },
-  { id: 'vacation', label: 'Vacation', icon: Calendar },
-  { id: 'pets', label: 'Pets', icon: Sparkles },
-  { id: 'events', label: 'Events', icon: Calendar },
-]
-
 export default function Sidebar() {
+  const { t } = useTranslation()
+  
+  const navItems = [
+    { path: '/', icon: LayoutDashboard, label: t('navigation.dashboard') },
+    { path: '/gallery', icon: Image, label: t('navigation.gallery') },
+    { path: '/people', icon: Users, label: t('navigation.people') },
+    { path: '/albums', icon: FolderHeart, label: t('navigation.import') },
+    { path: '/map', icon: MapPin, label: t('common.search') },
+    { path: '/processing', icon: HardDrive, label: t('common.search') },
+    { path: '/settings', icon: Settings, label: t('navigation.settings') },
+  ]
+
+  const smartAlbums = [
+    { id: 'family', label: t('dashboard.title'), icon: Users },
+    { id: 'vacation', label: t('dashboard.title'), icon: Calendar },
+    { id: 'pets', label: t('dashboard.title'), icon: Sparkles },
+    { id: 'events', label: t('dashboard.title'), icon: Calendar },
+  ]
+
   return (
     <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
       <nav className="flex-1 overflow-y-auto scrollbar-thin p-4">
@@ -57,7 +60,7 @@ export default function Sidebar() {
         
         <div className="mt-8">
           <h3 className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-            Smart Albums
+            {t('dashboard.title')}
           </h3>
           <div className="space-y-1">
             {smartAlbums.map((album) => (
@@ -77,7 +80,7 @@ export default function Sidebar() {
         
         <div className="mt-8">
           <h3 className="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-            Tags
+            {t('search.filters')}
           </h3>
           <div className="space-y-1">
             <NavLink
@@ -92,7 +95,7 @@ export default function Sidebar() {
             >
               <div className="flex items-center space-x-3">
                 <Tag className="w-4 h-4" />
-                <span className="text-sm">Favorites</span>
+                <span className="text-sm">{t('gallery.title')}</span>
               </div>
               <span className="text-xs text-gray-400">★</span>
             </NavLink>
@@ -109,7 +112,7 @@ export default function Sidebar() {
             >
               <div className="flex items-center space-x-3">
                 <FolderHeart className="w-4 h-4" />
-                <span className="text-sm">Private</span>
+                <span className="text-sm">{t('navigation.private')}</span>
               </div>
               <span className="text-xs text-gray-400">🔒</span>
             </NavLink>
@@ -126,7 +129,7 @@ export default function Sidebar() {
             >
               <div className="flex items-center space-x-3">
                 <Sparkles className="w-4 h-4" />
-                <span className="text-sm">Quality</span>
+                <span className="text-sm">{t('gallery.title')}</span>
               </div>
               <span className="text-xs text-gray-400">✨</span>
             </NavLink>
@@ -143,7 +146,7 @@ export default function Sidebar() {
             >
               <div className="flex items-center space-x-3">
                 <Smile className="w-4 h-4" />
-                <span className="text-sm">Expressions</span>
+                <span className="text-sm">{t('people.title')}</span>
               </div>
               <span className="text-xs text-gray-400">😊</span>
             </NavLink>
@@ -154,7 +157,7 @@ export default function Sidebar() {
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
         <button className="w-full btn btn-secondary flex items-center justify-center space-x-2">
           <Download className="w-4 h-4" />
-          <span>Export</span>
+          <span>{t('common.download')}</span>
         </button>
       </div>
     </aside>

@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { User, Users, Edit2, Merge, Split } from 'lucide-react'
 import { fetchPeople, fetchPersonPhotos, renamePerson } from '../services/api'
 import { useState } from 'react'
 
 export default function FacePanel({ show }) {
+  const { t } = useTranslation()
   const [selectedPeople, setSelectedPeople] = useState([])
   const [newName, setNewName] = useState('')
   const [isRenaming, setIsRenaming] = useState(false)
@@ -52,20 +54,20 @@ export default function FacePanel({ show }) {
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <h2 className="text-lg font-semibold flex items-center space-x-2">
           <User className="w-5 h-5" />
-          <span>People</span>
+          <span>{t('people.title')}</span>
         </h2>
       </div>
       
       <div className="flex-1 overflow-y-auto scrollbar-thin p-4">
         {isLoading ? (
           <div className="text-center text-gray-500 py-8">
-            Loading people...
+            {t('common.loading')}...
           </div>
         ) : !people || people.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             <User className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p>No people detected yet</p>
-            <p className="text-sm mt-1">Import photos to start</p>
+            <p>{t('people.noPeopleFound')}</p>
+            <p className="text-sm mt-1">{t('import.title')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
@@ -97,7 +99,7 @@ export default function FacePanel({ show }) {
                   )}
                 </div>
                 <div className="text-sm font-medium truncate">{person.name}</div>
-                <div className="text-xs text-gray-500">{person.face_count} photos</div>
+                <div className="text-xs text-gray-500">{person.face_count} {t('gallery.title')}</div>
               </div>
             ))}
           </div>
@@ -116,7 +118,7 @@ export default function FacePanel({ show }) {
           className="w-full btn btn-secondary text-sm flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Edit2 className="w-4 h-4" />
-          <span>Rename</span>
+          <span>{t('people.renamePerson')}</span>
         </button>
         <div className="grid grid-cols-2 gap-2">
           <button 
@@ -125,7 +127,7 @@ export default function FacePanel({ show }) {
             className="btn btn-ghost text-sm flex items-center justify-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Merge className="w-4 h-4" />
-            <span>Merge</span>
+            <span>{t('people.mergePeople')}</span>
           </button>
           <button 
             onClick={() => setShowGroupDialog(true)}
@@ -133,7 +135,7 @@ export default function FacePanel({ show }) {
             className="btn btn-ghost text-sm flex items-center justify-center space-x-1 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Users className="w-4 h-4" />
-            <span>Group</span>
+            <span>{t('people.groupPeople')}</span>
           </button>
         </div>
       </div>
@@ -141,13 +143,13 @@ export default function FacePanel({ show }) {
       {isRenaming && selectedPeople.length === 1 && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={() => setIsRenaming(false)}>
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-semibold mb-4">Rename Person</h3>
+            <h3 className="text-lg font-semibold mb-4">{t('people.renamePerson')}</h3>
             <input
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg mb-4 bg-white dark:bg-gray-700"
-              placeholder="Enter new name"
+              placeholder={t('people.renamePerson')}
               autoFocus
             />
             <div className="flex space-x-2">
@@ -160,7 +162,7 @@ export default function FacePanel({ show }) {
                 disabled={!newName.trim() || renameMutation.isPending}
                 className="flex-1 btn btn-primary"
               >
-                {renameMutation.isPending ? 'Saving...' : 'Save'}
+                {renameMutation.isPending ? t('common.save') : t('common.save')}
               </button>
               <button
                 onClick={() => setIsRenaming(false)}

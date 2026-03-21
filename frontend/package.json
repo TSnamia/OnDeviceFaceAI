@@ -6,18 +6,22 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "check": "node -e \"const http = require('http'); http.get('http://localhost:5173', (res) => { let data = ''; res.on('data', chunk => data += chunk); res.on('end', () => { console.log('✅ Frontend is running!'); console.log('Status:', res.statusCode); console.log('First 20 lines:'); console.log(data.split('\\n').slice(0, 20).join('\\n')); }); });\""
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.21.1",
     "@tanstack/react-query": "^5.17.9",
     "axios": "^1.6.5",
-    "lucide-react": "^0.309.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.0.6",
+    "i18next": "^25.9.0",
+    "i18next-browser-languagedetector": "^8.2.1",
+    "lucide-react": "^0.309.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
+    "react-i18next": "^16.5.8",
+    "react-router-dom": "^6.21.1",
     "react-virtualized-auto-sizer": "^1.0.22",
     "react-window": "^1.8.10"
   },

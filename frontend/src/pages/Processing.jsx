@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { Loader2, Play, RotateCcw, AlertTriangle, Bot, Square, RefreshCcw, SkipForward, Activity } from 'lucide-react'
 import {
   getProcessingHealth,
@@ -20,6 +21,7 @@ function formatPercent(p) {
 }
 
 export default function Processing() {
+  const { t } = useTranslation()
   const [selectedJobId, setSelectedJobId] = useState(null)
   const [batchSizeInput, setBatchSizeInput] = useState(1)
   const [pollIntervalInput, setPollIntervalInput] = useState(2)
@@ -168,7 +170,7 @@ export default function Processing() {
           <div className="text-center text-gray-500 py-12">
             <RotateCcw className="w-12 h-12 mx-auto mb-4 opacity-50" />
             <p className="text-lg">No processing jobs</p>
-            <p className="text-sm mt-1">Import photos to generate jobs</p>
+            <p className="text-sm mt-1">{t('navigation.import')} {t('common.search')}</p>
           </div>
         ) : (
           <div className="space-y-3">

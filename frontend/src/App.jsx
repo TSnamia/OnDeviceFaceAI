@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Layout from './components/Layout'
-import Login from './pages/Login'
+import ModernHeader from './components/ModernHeader'
 import Dashboard from './pages/Dashboard'
 import Gallery from './pages/Gallery'
 import People from './pages/People'
@@ -18,61 +18,30 @@ import Processing from './pages/Processing'
 import Settings from './pages/Settings'
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    // Check if user is authenticated
-    const authStatus = localStorage.getItem('is_authenticated')
-    setIsAuthenticated(authStatus === 'true')
-    setIsLoading(false)
-  }, [])
-
-  const handleLogin = () => {
-    setIsAuthenticated(true)
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('is_authenticated')
-    setIsAuthenticated(false)
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
-      </div>
-    )
-  }
+  const { t } = useTranslation()
 
   return (
     <Router>
-      {!isAuthenticated ? (
+      <ModernHeader />
+      <Layout>
         <Routes>
-          <Route path="/login" element={<Login onLogin={handleLogin} />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/gallery" element={<Gallery />} />
+          <Route path="/people" element={<People />} />
+          <Route path="/people/:personId" element={<PersonProfile />} />
+          <Route path="/albums" element={<Albums />} />
+          <Route path="/albums/private" element={<PrivateAlbums />} />
+          <Route path="/map" element={<Map />} />
+          <Route path="/favorites" element={<Favorites />} />
+          <Route path="/similar" element={<SimilarPhotos />} />
+          <Route path="/quality" element={<QualityFilter />} />
+          <Route path="/expressions" element={<ExpressionFilter />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/processing" element={<Processing />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      ) : (
-        <Layout onLogout={handleLogout}>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/people" element={<People />} />
-            <Route path="/people/:personId" element={<PersonProfile />} />
-            <Route path="/albums" element={<Albums />} />
-            <Route path="/albums/private" element={<PrivateAlbums />} />
-            <Route path="/map" element={<Map />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/similar" element={<SimilarPhotos />} />
-            <Route path="/quality" element={<QualityFilter />} />
-            <Route path="/expressions" element={<ExpressionFilter />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/processing" element={<Processing />} />
-            <Route path="/settings" element={<Settings />} />
-            <Route path="/login" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Layout>
-      )}
+      </Layout>
     </Router>
   )
 }
