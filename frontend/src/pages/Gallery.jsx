@@ -193,7 +193,7 @@ export default function Gallery() {
       </div>
       
       <PhotoGrid 
-        photos={data.photos} 
+        photos={data} 
         selectionMode={selectionMode}
         selectedPhotos={selectedPhotos}
         onPhotoSelect={handlePhotoSelect}
@@ -201,7 +201,7 @@ export default function Gallery() {
       
       {showSlideshow && (
         <Slideshow
-          photos={data.photos}
+          photos={data}
           initialIndex={0}
           onClose={() => setShowSlideshow(false)}
         />

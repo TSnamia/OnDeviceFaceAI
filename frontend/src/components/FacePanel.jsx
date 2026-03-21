@@ -18,6 +18,8 @@ export default function FacePanel({ show }) {
     queryFn: fetchPeople,
   })
   
+  console.log('FacePanel people array:', people)
+  
   const firstSelectedPersonId = selectedPeople?.[0]?.id
   const { data: firstSelectedPersonPhotos, isLoading: firstSelectedPersonPhotosLoading } = useQuery({
     queryKey: ['person-photos', firstSelectedPersonId],

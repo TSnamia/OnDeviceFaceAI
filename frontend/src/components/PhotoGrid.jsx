@@ -30,10 +30,10 @@ export default function PhotoGrid({ photos, selectionMode = false, selectedPhoto
                   : 'hover:ring-2 hover:ring-primary-500'
               }`}
             >
-              {photo.thumbnail_path ? (
+              {photo.file_path ? (
                 <>
                   <img
-                    src={`http://localhost:8000/thumbnails/${photo.id}/thumbnail.jpg`}
+                    src={`http://localhost:8000/${photo.file_path}`}
                     alt={photo.file_name}
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -97,12 +97,13 @@ function PhotoModal({ photo, onClose, onEdit }) {
     >
       <div className="max-w-7xl max-h-full p-4">
         <img
-          src={`http://localhost:8000/thumbnails/${photo.id}/preview.jpg`}
+          src={`http://localhost:8000/${photo.file_path}`}
           alt={photo.file_name}
           className="max-w-full max-h-full object-contain"
           onClick={(e) => e.stopPropagation()}
           onError={(e) => {
-            e.target.src = `http://localhost:8000/thumbnails/${photo.id}/thumbnail.jpg`
+            e.target.style.display = 'none';
+            e.target.parentElement.innerHTML = '<div class="w-full h-full flex items-center justify-center text-white"><svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><p class="mt-2">Image not available</p></div>';
           }}
         />
       </div>

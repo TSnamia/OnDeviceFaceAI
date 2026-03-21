@@ -10,10 +10,12 @@ export default function People() {
   const [selectedPerson, setSelectedPerson] = useState(null)
   const navigate = useNavigate()
   
-  const { data: people, isLoading, error } = useQuery({
+  const { data: people = [], isLoading, error } = useQuery({
     queryKey: ['people'],
     queryFn: fetchPeople,
   })
+  
+  console.log('People array:', people)
   
   const { data: personPhotos, isLoading: photosLoading } = useQuery({
     queryKey: ['person-photos', selectedPerson?.id],

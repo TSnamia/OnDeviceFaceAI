@@ -10,13 +10,13 @@ const api = axios.create({
 })
 
 export const fetchPhotos = async (skip = 0, limit = 100) => {
-  console.log('Fetching photos from:', `${API_BASE_URL}/photos/`)
+  console.log('Fetching photos from:', `${API_BASE_URL}/photos`)
   try {
-    const response = await api.get('/photos/', {
+    const response = await api.get('/photos', {
       params: { skip, limit }
     })
     console.log('Photos response:', response.data)
-    return response.data
+    return response.data.photos || []
   } catch (error) {
     console.error('Error fetching photos:', error)
     throw error
@@ -43,10 +43,10 @@ export const bulkDeletePhotos = async (photoIds) => {
 export const uploadPhotos = async ({ files, onProgress } = {}) => {
   const formData = new FormData()
   ;(files || []).forEach((file) => {
-    formData.append('files', file)
+    formData.append('file', file)  // Single file for backend
   })
   
-  const response = await api.post('/photos/upload-multiple', formData, {
+  const response = await api.post('/photos/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
@@ -86,7 +86,7 @@ export const clusterAllFaces = async () => {
 
 export const fetchPeople = async () => {
   const response = await api.get('/faces/people')
-  return response.data
+  return response.data.people || []
 }
 
 export const listProcessingJobs = async () => {

@@ -43,36 +43,36 @@ class ImportFolderRequest(BaseModel):
     recursive: bool = True
 
 
-@router.post("/upload", response_model=PhotoResponse)
+@router.post("/upload")
 async def upload_photo(
     file: UploadFile = File(...),
     db: Session = Depends(get_db)
 ):
-    """Upload a single photo"""
+    """Upload photo - SIMPLIFIED"""
     try:
-        upload_dir = settings.DATA_DIR / "uploads"
-        upload_dir.mkdir(parents=True, exist_ok=True)
+        # Save file temporarily
+        import tempfile
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
+            shutil.copyfileobj(file.file, tmp)
+            tmp_path = tmp.name
         
-        file_path = upload_dir / file.filename
-        
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        
+        # Import photo
         service = PhotoService(db)
-        photo = service.import_photo(str(file_path), copy_to_library=True)
+        photo = service.import_photo(tmp_path)
+        
         if photo:
-            face_service = FaceService(db)
-            face_service.detect_faces_in_photo(photo.id)
-            face_service.cluster_all_faces()
-        
-        file_path.unlink()
-        
-        if not photo:
+            return {
+                "id": photo.id,
+                "file_name": photo.file_name,
+                "file_path": photo.file_path,
+                "processed": photo.processed,
+                "imported_at": photo.imported_at.isoformat()
+            }
+        else:
             raise HTTPException(status_code=400, detail="Failed to import photo")
-        
-        return photo
-        
+            
     except Exception as e:
+        print(f"Upload error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -134,25 +134,23 @@ async def import_folder(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/", response_model=PhotoListResponse)
+@router.get("/")
 async def get_photos(
     skip: int = 0,
     limit: int = 100,
-    order_by: str = "taken_at",
-    ascending: bool = False,
     db: Session = Depends(get_db)
 ):
-    """Get photos with pagination"""
+    """Get photos - SIMPLIFIED"""
     service = PhotoService(db)
-    photos = service.get_photos(skip, limit, order_by, ascending)
-    total = db.query(Photo).count()
+    photos = service.get_photos(skip, limit)
+    total = service.get_photo_count()
     
-    return PhotoListResponse(
-        photos=photos,
-        total=total,
-        skip=skip,
-        limit=limit
-    )
+    return {
+        "photos": photos,
+        "total": total,
+        "skip": skip,
+        "limit": limit
+    }
 
 
 @router.get("/{photo_id}", response_model=PhotoResponse)
