@@ -1,129 +1,138 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from app.core.config import settings
-from app.models.simple_photo import init_db, get_db, SimplePhoto as Photo
-from app.services.photo_service import PhotoService
+from sqlalchemy import create_engine, Column, Integer, String, Boolean, DateTime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Session
 from pathlib import Path
-import shutil
-import tempfile
-from sqlalchemy.orm import Session
+import cv2
+import numpy as np
+from insightface.app import FaceAnalysis
+import json
+from datetime import datetime
 
-app = FastAPI(
-    title=settings.APP_NAME,
-    version=settings.APP_VERSION,
-    description="Offline web-based intelligent photo archive with AI-powered face recognition"
-)
+# Database
+Base = declarative_base()
+engine = create_engine("sqlite:///database/photos.db", connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+class Photo(Base):
+    __tablename__ = 'photos'
+    id = Column(Integer, primary_key=True, index=True)
+    file_name = Column(String, nullable=False)
+    file_path = Column(String, nullable=False)
+    file_size = Column(Integer, nullable=False)
+    processed = Column(Boolean, default=False)
+    imported_at = Column(DateTime, default=datetime.utcnow)
+
+Base.metadata.create_all(bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# AI Model
+face_app = FaceAnalysis(name="buffalo_l", providers=['CPUExecutionProvider'])
+face_app.prepare(ctx_id=0, det_size=(640, 640))
+
+# FastAPI
+app = FastAPI(title="Clean Photo API")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# DIRECT ENDPOINTS - NO ROUTER
+# Static files
+uploads_dir = Path("uploads")
+uploads_dir.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 @app.post("/api/v1/photos/upload")
-async def upload_photo_direct(
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db)
-):
-    """DIRECT UPLOAD - WORKING VERSION"""
-    print(f"📤 Upload request received: {file.filename}")
+async def upload_photo(file: UploadFile = File(...), db: Session = Depends(get_db)):
+    print(f"📤 Upload received: {file.filename}")
     
+    # Save file
+    upload_path = uploads_dir / file.filename
+    with open(upload_path, "wb") as buffer:
+        content = await file.read()
+        buffer.write(content)
+    
+    print(f"✅ File saved: {upload_path}")
+    
+    # Create photo record
+    photo = Photo(
+        file_name=file.filename,
+        file_path=f"uploads/{file.filename}",
+        file_size=upload_path.stat().st_size,
+        processed=False
+    )
+    
+    db.add(photo)
+    db.commit()
+    db.refresh(photo)
+    
+    print(f"✅ Photo created in DB: ID {photo.id}")
+    
+    # AI Face Analysis
+    print(f"🧠 Starting face analysis...")
     try:
-        # Save file temporarily
-        print("💾 Saving temporary file...")
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
-            shutil.copyfileobj(file.file, tmp)
-            tmp_path = tmp.name
-        
-        print(f"📁 File saved to: {tmp_path}")
-        
-        # Import photo
-        print("🔄 Importing photo to database...")
-        service = PhotoService(db)
-        photo = service.import_photo(tmp_path)
-        
-        print(f"📊 Import result: {photo}")
-        
-        if photo:
-            result = {
-                "id": photo.id,
-                "file_name": photo.file_name,
-                "file_path": photo.file_path,
-                "processed": photo.processed,
-                "imported_at": photo.imported_at.isoformat()
-            }
-            print(f"✅ SUCCESS: {result}")
-            return result
+        img = cv2.imread(str(upload_path))
+        if img is not None:
+            faces = face_app.get(img)
+            print(f"🎯 Found {len(faces)} faces")
+            
+            if faces:
+                photo.processed = True
+                db.commit()
+                print(f"✅ PROCESSED: {file.filename} - {len(faces)} faces")
+                
+                for i, face in enumerate(faces):
+                    confidence = float(face.det_score)
+                    print(f"  Face {i+1}: confidence={confidence:.3f}")
+            else:
+                print("❌ No faces found")
         else:
-            print("❌ Failed to import photo")
-            raise HTTPException(status_code=400, detail="Failed to import photo")
+            print("❌ Cannot read image")
             
     except Exception as e:
-        print(f"💥 Upload error: {e}")
-        print(f"📍 Error type: {type(e)}")
-        print("🔥 FULL ERROR TRACEBACK:")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"❌ Face analysis error: {e}")
+    
+    return {"id": photo.id, "file_name": photo.file_name, "processed": photo.processed}
 
 @app.get("/api/v1/photos")
-async def get_photos_direct(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db)
-):
-    """DIRECT GET PHOTOS - WORKING VERSION"""
-    service = PhotoService(db)
-    photos = service.get_photos(skip, limit)
-    total = service.get_photo_count()
+def get_photos(db: Session = Depends(get_db)):
+    photos = db.query(Photo).all()
+    # Convert to dict and remove SQLAlchemy state
+    photo_list = []
+    for photo in photos:
+        photo_dict = {
+            "id": photo.id,
+            "file_name": photo.file_name,
+            "file_path": photo.file_path,
+            "file_size": photo.file_size,
+            "processed": photo.processed,
+            "imported_at": photo.imported_at.isoformat() if photo.imported_at else None
+        }
+        photo_list.append(photo_dict)
     
-    return {
-        "photos": photos,
-        "total": total,
-        "skip": skip,
-        "limit": limit
-    }
+    print(f"📊 Returning {len(photo_list)} photos")
+    return photo_list
 
-if settings.THUMBNAILS_DIR.exists():
-    app.mount("/thumbnails", StaticFiles(directory=str(settings.THUMBNAILS_DIR)), name="thumbnails")
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database on startup"""
-    init_db()
-    print(f"{settings.APP_NAME} v{settings.APP_VERSION} started")
-    print(f"Database initialized at {settings.DATABASE_URL}")
-
+@app.get("/api/v1/faces/people")
+def get_people(db: Session = Depends(get_db)):
+    return {"people": [], "total": 0}
 
 @app.get("/")
 async def root():
-    return {
-        "app": settings.APP_NAME,
-        "version": settings.APP_VERSION,
-        "status": "running"
-    }
+    return {"status": "clean photo api running"}
 
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
-
-
-@app.get("/stats")
-async def get_stats():
-    return {
-        "totalPhotos": 10,
-        "totalPeople": 2,
-        "thisMonth": 5,
-        "processing": 80
-    }
-
-
-@app.get("/api/v1/photos")
-async def get_photos_simple():
-    return [{"id": 1, "url": "test.jpg", "file_name": "test.jpg"}]
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

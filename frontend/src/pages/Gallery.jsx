@@ -30,10 +30,10 @@ export default function Gallery() {
   }
 
   const handleSelectAll = () => {
-    if (selectedPhotos.length === data.photos.length) {
+    if (selectedPhotos.length === data.length) {
       setSelectedPhotos([])
     } else {
-      setSelectedPhotos([...data.photos])
+      setSelectedPhotos([...data])
     }
   }
 
@@ -116,7 +116,7 @@ export default function Gallery() {
     )
   }
 
-  if (!data?.photos || data.photos.length === 0) {
+  if (!data || data.length === 0) {
     return (
       <div className="h-full flex items-center justify-center">
         <div className="text-center text-gray-500">
@@ -133,14 +133,14 @@ export default function Gallery() {
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">
-            All Photos ({data.total})
+            All Photos ({data.length})
           </h2>
           
           {!selectionMode ? (
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setShowSlideshow(true)}
-                disabled={data.photos.length === 0}
+                disabled={data.length === 0}
                 className="btn btn-ghost flex items-center space-x-2 disabled:opacity-50"
               >
                 <Play className="w-4 h-4" />
@@ -163,7 +163,7 @@ export default function Gallery() {
                 onClick={handleSelectAll}
                 className="btn btn-ghost text-sm"
               >
-                {selectedPhotos.length === data.photos.length ? 'Deselect All' : 'Select All'}
+                {selectedPhotos.length === data.length ? 'Deselect All' : 'Select All'}
               </button>
               <button
                 onClick={handleDelete}

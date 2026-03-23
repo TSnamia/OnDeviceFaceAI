@@ -1,4 +1,2 @@
-from .photo_service import PhotoService
-from .face_service import FaceService
-
-__all__ = ['PhotoService', 'FaceService']
+# Clean services module
+# All functionality is now in main.py
